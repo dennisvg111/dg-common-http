@@ -9,26 +9,15 @@ namespace DG.Common.Http.Tests.Examples
     public class MockHttpMessageHandlerExamples
     {
         [Fact]
-        public async void Unmocked_ReturnsNotImplemented()
-        {
-            var client = new HttpClient(new MockableHandler());
-
-            var result = await client.GetAsync("http://www.test.com");
-
-            Assert.Equal(HttpStatusCode.NotImplemented, result.StatusCode);
-        }
-
-        [Fact]
         public async void MockSend_ReturnsOk()
         {
             var statusOk = new System.Net.Http.HttpResponseMessage()
             {
                 StatusCode = HttpStatusCode.OK
             };
-            var mockedHandler = Substitute.ForPartsOf<MockableHandler>();
-            mockedHandler.MockSend(Arg.Any<HttpRequestMessage>()).Returns(statusOk);
-
-            var client = new HttpClient(mockedHandler);
+            var mockedHandler = Substitute.For<IMockRequest>();
+            mockedHandler.GetResponse(Arg.Any<HttpRequestMessage>()).Returns(statusOk);
+            var client = mockedHandler.CreateNewClient();
 
             var result = await client.GetAsync("http://www.test.com");
 
@@ -46,14 +35,13 @@ namespace DG.Common.Http.Tests.Examples
             {
                 StatusCode = HttpStatusCode.BadRequest
             };
-            var mockedHandler = Substitute.ForPartsOf<MockableHandler>();
-            mockedHandler.MockSend(Arg.Is<HttpRequestMessage>(m => m.RequestUri.Host == "www.test.com")).Returns(statusOk);
-            mockedHandler.MockSend(Arg.Is<HttpRequestMessage>(m => m.RequestUri.Host != "www.test.com")).Returns(statusBadRequest);
+            var mockedHandler = Substitute.For<IMockRequest>();
+            mockedHandler.GetResponse(Arg.Is<HttpRequestMessage>(m => m.Method == HttpMethod.Post)).Returns(statusOk);
+            mockedHandler.GetResponse(Arg.Is<HttpRequestMessage>(m => m.Method == HttpMethod.Get)).Returns(statusBadRequest);
+            var client = mockedHandler.CreateNewClient();
 
-            var client = new HttpClient(mockedHandler);
-
-            var result1 = await client.GetAsync("http://www.test.com");
-            var result2 = await client.GetAsync("http://www.other-site.com");
+            var result1 = await client.PostAsync("http://www.test.com", new StringContent(string.Empty));
+            var result2 = await client.GetAsync("http://www.test.com");
 
             Assert.Equal(HttpStatusCode.OK, result1.StatusCode);
             Assert.Equal(HttpStatusCode.BadRequest, result2.StatusCode);
@@ -66,15 +54,14 @@ namespace DG.Common.Http.Tests.Examples
             {
                 StatusCode = HttpStatusCode.OK
             };
-            var mockedHandler = Substitute.ForPartsOf<MockableHandler>();
-            mockedHandler.MockSend(Arg.Any<HttpRequestMessage>()).Returns(statusOk);
-
-            var client = new HttpClient(mockedHandler);
+            var mockedHandler = Substitute.For<IMockRequest>();
+            mockedHandler.GetResponse(Arg.Any<HttpRequestMessage>()).Returns(statusOk);
+            var client = mockedHandler.CreateNewClient();
 
             await client.GetAsync("http://www.test.com");
             await client.GetAsync("http://www.test.com/test");
 
-            mockedHandler.Received(2).MockSend(Arg.Any<HttpRequestMessage>());
+            mockedHandler.Received(2).GetResponse(Arg.Any<HttpRequestMessage>());
         }
     }
 }

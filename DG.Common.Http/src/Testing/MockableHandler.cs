@@ -1,5 +1,4 @@
-﻿using System.Net;
-using System.Net.Http;
+﻿using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -7,18 +6,16 @@ namespace DG.Common.Http.Testing
 {
     public class MockableHandler : HttpMessageHandler
     {
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        private readonly IMockRequest _request;
+
+        public MockableHandler(IMockRequest request)
         {
-            return await Task.Run(() => MockSend(request));
+            _request = request;
         }
 
-        public virtual HttpResponseMessage MockSend(HttpRequestMessage request)
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            return new HttpResponseMessage
-            {
-                StatusCode = HttpStatusCode.NotImplemented,
-                Content = new StringContent("")
-            };
+            return await Task.Run(() => _request.GetResponse(request));
         }
     }
 }
