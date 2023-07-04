@@ -1,10 +1,9 @@
-﻿using DG.Common.Exceptions;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace DG.Common.Http
+namespace DG.Common.Http.FluentBuilders
 {
     /// <summary>
     /// This class provides extension methods for <see cref="UriBuilder"/>.
@@ -62,7 +61,7 @@ namespace DG.Common.Http
         /// <returns></returns>
         public static UriBuilder WithQuery(this UriBuilder builder, string value)
         {
-            return WithQuery(builder, value, null);
+            return builder.WithQuery(value, null);
         }
 
         /// <summary>
@@ -74,7 +73,7 @@ namespace DG.Common.Http
         /// <returns></returns>
         public static UriBuilder WithQuery(this UriBuilder builder, string name, string value)
         {
-            return WithQueryParts(builder, new KeyValuePair<string, string>[] { new KeyValuePair<string, string>(name, value) });
+            return builder.WithQueryParts(new KeyValuePair<string, string>[] { new KeyValuePair<string, string>(name, value) });
         }
 
         /// <summary>
