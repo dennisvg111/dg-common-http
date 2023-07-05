@@ -3,6 +3,9 @@ using System.Threading.Tasks;
 
 namespace DG.Common.Http.FluentBuilders
 {
+    /// <summary>
+    /// This class provides extension methods for <see cref="HttpClient"/>.
+    /// </summary>
     public static class HttpClientExtensions
     {
         /// <summary>
