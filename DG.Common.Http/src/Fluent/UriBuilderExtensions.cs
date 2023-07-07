@@ -90,6 +90,7 @@ namespace DG.Common.Http.Fluent
             {
                 AddParts(parts, kv.Key, kv.Value);
             }
+            builder = new UriBuilder(builder.Uri);
             builder.SetQueryParts(parts);
             return builder;
         }
