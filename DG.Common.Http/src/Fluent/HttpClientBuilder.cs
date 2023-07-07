@@ -1,6 +1,6 @@
 ﻿using System.Net.Http;
 
-namespace DG.Common.Http.FluentBuilders
+namespace DG.Common.Http.Fluent
 {
     /// <summary>
     /// Provides a custom constructor for the <see cref="HttpClient"/> class.

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net.Http;
 
-namespace DG.Common.Http.FluentBuilders
+namespace DG.Common.Http.Fluent
 {
     public class HttpRequestMessageBuilder
     {

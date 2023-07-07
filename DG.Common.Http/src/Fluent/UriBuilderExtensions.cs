@@ -1,9 +1,10 @@
-﻿using System;
+﻿using DG.Common.Exceptions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace DG.Common.Http.FluentBuilders
+namespace DG.Common.Http.Fluent
 {
     /// <summary>
     /// This class provides extension methods for <see cref="UriBuilder"/>.

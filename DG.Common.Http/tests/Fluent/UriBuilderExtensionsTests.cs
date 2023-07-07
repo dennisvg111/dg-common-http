@@ -1,10 +1,10 @@
-﻿using System;
+﻿using DG.Common.Http.Fluent;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using DG.Common.Http.FluentBuilders;
 using Xunit;
 
-namespace DG.Common.Http.Tests.FluentBuilders
+namespace DG.Common.Http.Tests.Fluent
 {
     public class UriBuilderExtensionsTests
     {

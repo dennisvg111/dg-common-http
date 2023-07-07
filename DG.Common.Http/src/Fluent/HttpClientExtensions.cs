@@ -1,7 +1,7 @@
 ﻿using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace DG.Common.Http.FluentBuilders
+namespace DG.Common.Http.Fluent
 {
     /// <summary>
     /// This class provides extension methods for <see cref="HttpClient"/>.

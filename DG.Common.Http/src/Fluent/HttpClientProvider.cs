@@ -3,7 +3,7 @@ using System;
 using System.Net.Http;
 using System.Runtime.Caching;
 
-namespace DG.Common.Http.FluentBuilders
+namespace DG.Common.Http.Fluent
 {
     /// <summary>
     /// This class provides a custom way to create instances of <see cref="HttpClient"/> to prevent socket exhaustion and DNS problems.
