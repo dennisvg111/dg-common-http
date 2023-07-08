@@ -9,7 +9,7 @@ namespace DG.Common.Http.Fluent
     /// </summary>
     public class FluentRequestMethod
     {
-        private static readonly ConcurrentDictionary<string, FluentRequestMethod> _methods;
+        private static readonly ConcurrentDictionary<string, FluentRequestMethod> _methods = new ConcurrentDictionary<string, FluentRequestMethod>();
 
         private readonly HttpMethod _method;
 
