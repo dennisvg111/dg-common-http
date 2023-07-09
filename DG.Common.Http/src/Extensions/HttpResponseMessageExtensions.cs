@@ -2,7 +2,7 @@
 using System.Net;
 using System.Net.Http;
 
-namespace DG.Common.Http.Fluent
+namespace DG.Common.Http.Extensions
 {
     public static class HttpResponseMessageExtensions
     {

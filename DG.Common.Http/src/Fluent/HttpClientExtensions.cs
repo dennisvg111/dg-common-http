@@ -1,4 +1,5 @@
-﻿using System.Net.Http;
+﻿using DG.Common.Http.Extensions;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace DG.Common.Http.Fluent

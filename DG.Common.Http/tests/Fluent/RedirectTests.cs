@@ -13,7 +13,7 @@ namespace DG.Common.Http.Tests.Fluent
         {
             var message = FluentRequest.Get.To("https://httpbin.org/cookies/set/cookieName/cookieValue");
             HttpClientHandler handler = new HttpClientHandler();
-            handler.AllowAutoRedirect = false;
+            //handler.AllowAutoRedirect = false;
             HttpClient client = new HttpClient(handler);
 
             var result = await client.SendMessageAsync(message);
