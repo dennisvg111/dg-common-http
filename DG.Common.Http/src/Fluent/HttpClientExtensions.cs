@@ -17,18 +17,19 @@ namespace DG.Common.Http.Fluent
         /// <returns>Returns a <see cref="Task{TResult}"/> object representing the asynchronous operation.</returns>
         public static async Task<HttpResponseMessage> SendMessageAsync(this HttpClient client, FluentRequest messageBuilder)
         {
-            return await FollowRedirects(client, messageBuilder, 5);
+            return await FollowRedirects(client, messageBuilder);
         }
 
-        private static async Task<HttpResponseMessage> FollowRedirects(HttpClient client, FluentRequest messageBuilder, int maxRedirects)
+        private static async Task<HttpResponseMessage> FollowRedirects(HttpClient client, FluentRequest messageBuilder)
         {
             var request = messageBuilder.Message;
 
             var response = await client.SendAsync(request);
 
-            if (response.IsRedirect())
+            if (response.IsRedirect() && messageBuilder.MaxRedirects > 0)
             {
-
+                var redirect = messageBuilder.RedirectForResponse(response);
+                return await FollowRedirects(client, redirect);
             }
 
             return response;

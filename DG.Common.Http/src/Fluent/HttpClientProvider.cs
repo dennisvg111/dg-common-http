@@ -18,12 +18,12 @@ namespace DG.Common.Http.Fluent
         );
 
         /// <summary>
-        /// <para>Gets a <see cref="HttpClient"/> instance constructed by the given <see cref="HttpClientBuilder"/>.</para>
+        /// <para>Gets a <see cref="HttpClient"/> instance constructed by the given <see cref="HttpClientSettings"/>.</para>
         /// <para>Note that this may return the same instance multiple times if no new instance is needed.</para>
         /// </summary>
         /// <param name="builder"></param>
         /// <returns></returns>
-        public static HttpClient GetClientForBuilder(HttpClientBuilder builder)
+        public static HttpClient ClientForSettings(HttpClientSettings builder)
         {
             return _cache.GetOrCreate(builder.CacheId, () => builder.Client);
         }

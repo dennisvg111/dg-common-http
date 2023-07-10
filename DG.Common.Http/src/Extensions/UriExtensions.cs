@@ -9,6 +9,16 @@ namespace DG.Common.Http.Extensions
     public static class UriExtensions
     {
         /// <summary>
+        /// Detects if the <see cref="Uri.Scheme"/> of the given <see cref="Uri"/> is HTTPS.
+        /// </summary>
+        /// <param name="uri"></param>
+        /// <returns></returns>
+        public static bool IsSecure(this Uri uri)
+        {
+            return uri.Scheme == Uri.UriSchemeHttps;
+        }
+
+        /// <summary>
         /// Get the root (combination of <see cref="Uri.Scheme"/>, <see cref="Uri.Host"/>, and <see cref="Uri.Port"/> if needed) for the given <see cref="Uri"/>.
         /// </summary>
         /// <param name="uri"></param>

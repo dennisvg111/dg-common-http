@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using DG.Common.Http.Extensions;
+using Newtonsoft.Json;
 using System;
 using System.Net.Http;
 using System.Text;
@@ -8,8 +9,15 @@ namespace DG.Common.Http.Fluent
     public class FluentRequest
     {
         private readonly HttpMethod _method;
-        private readonly UriBuilder _uriBuilder;
+        private readonly Uri _uri;
         private readonly HttpContent _content;
+        private readonly int _maxRedirects = HttpClientSettings.DefaultAutomaticRedirectLimit;
+
+        /// <summary>
+        /// The maximum number of redirects that this request will follow automatically.
+        /// </summary>
+        public int MaxRedirects => _maxRedirects;
+
 
         /// <summary>
         /// Gets a <see cref="HttpRequestMessage"/> instance constructed by this <see cref="FluentRequest"/>.
@@ -18,20 +26,21 @@ namespace DG.Common.Http.Fluent
         {
             get
             {
-                var message = new HttpRequestMessage(_method, _uriBuilder.Uri);
+                var message = new HttpRequestMessage(_method, _uri);
                 return message;
             }
         }
 
-        internal FluentRequest(HttpMethod method, UriBuilder uriBuilder)
+        internal FluentRequest(HttpMethod method, Uri uri)
         {
             _method = method;
-            _uriBuilder = uriBuilder;
+            _uri = uri;
         }
 
-        private FluentRequest(HttpMethod method, UriBuilder uriBuilder, HttpContent content) : this(method, uriBuilder)
+        private FluentRequest(HttpMethod method, Uri uri, HttpContent content, int maxRedirects) : this(method, uri)
         {
             _content = content;
+            _maxRedirects = maxRedirects;
         }
 
         public FluentRequest WithSerializedJsonContent<T>(T content)
@@ -43,7 +52,17 @@ namespace DG.Common.Http.Fluent
         public FluentRequest WithJson(string json)
         {
             var messageContent = new StringContent(json, Encoding.UTF8, "application/json");
-            return new FluentRequest(_method, _uriBuilder, messageContent);
+            return new FluentRequest(_method, _uri, messageContent, _maxRedirects);
+        }
+
+        public FluentRequest LimitAutomaticRedirectsTo(int maxRedirects)
+        {
+            return new FluentRequest(_method, _uri, _content, maxRedirects);
+        }
+
+        public FluentRequest WithoutRedirects()
+        {
+            return new FluentRequest(_method, _uri, _content, 0);
         }
 
         /// <summary>
@@ -84,6 +103,24 @@ namespace DG.Common.Http.Fluent
         public static FluentRequestMethod For(HttpMethod method)
         {
             return FluentRequestMethod.For(method);
+        }
+
+        /// <summary>
+        /// Creates a new instance of <see cref="FluentRequest"/> that describes the redirection by the given <see cref="HttpResponseMessage"/>.
+        /// </summary>
+        /// <param name="response"></param>
+        /// <returns></returns>
+        public FluentRequest RedirectForResponse(HttpResponseMessage response)
+        {
+            var changeToGet = response.IsGetRedirect(_method);
+            var method = changeToGet ? HttpMethod.Get : _method;
+
+            var location = response.Headers.Location;
+            var solvedLocationUri = response.RequestMessage.RequestUri.CombineForRedirectLocation(location);
+
+            var baseRedirect = new FluentRequest(method, solvedLocationUri, changeToGet ? null : _content, _maxRedirects - 1);
+
+            return baseRedirect;
         }
     }
 }

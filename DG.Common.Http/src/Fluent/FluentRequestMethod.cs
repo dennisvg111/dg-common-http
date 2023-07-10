@@ -30,7 +30,7 @@ namespace DG.Common.Http.Fluent
         /// <returns></returns>
         public FluentRequest To(string url)
         {
-            return new FluentRequest(_method, new UriBuilder(url));
+            return new FluentRequest(_method, new Uri(url, UriKind.RelativeOrAbsolute));
         }
 
         /// <summary>
@@ -40,7 +40,7 @@ namespace DG.Common.Http.Fluent
         /// <returns></returns>
         public FluentRequest To(Uri url)
         {
-            return new FluentRequest(_method, new UriBuilder(url));
+            return new FluentRequest(_method, url);
         }
 
         /// <summary>
@@ -50,7 +50,7 @@ namespace DG.Common.Http.Fluent
         /// <returns></returns>
         public FluentRequest To(UriBuilder urlBuilder)
         {
-            return new FluentRequest(_method, urlBuilder);
+            return new FluentRequest(_method, urlBuilder.Uri);
         }
     }
 }
