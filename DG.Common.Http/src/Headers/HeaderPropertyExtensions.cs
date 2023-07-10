@@ -6,7 +6,7 @@ namespace DG.Common.Http.Headers
     {
         public static bool TryGet(this HeaderProperty[] properties, string name, out string value)
         {
-            var property = properties.FirstOrDefault(p => p.NameEquals(name));
+            var property = properties.LastOrDefault(p => p.NameEquals(name));
             if (property == null)
             {
                 value = null;

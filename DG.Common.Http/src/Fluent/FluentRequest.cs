@@ -43,6 +43,11 @@ namespace DG.Common.Http.Fluent
             _maxRedirects = maxRedirects;
         }
 
+        public FluentRequest WithContent(FluentFormContent content)
+        {
+            return new FluentRequest(_method, _uri, content.Content, _maxRedirects);
+        }
+
         public FluentRequest WithSerializedJsonContent<T>(T content)
         {
             var json = JsonConvert.SerializeObject(content);

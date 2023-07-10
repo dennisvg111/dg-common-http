@@ -174,7 +174,30 @@ namespace DG.Common.Http.Cookies
             return $"{_name}={_value}";
         }
 
-        internal void ParseAdditionalProperties(HeaderProperty[] properties)
+        /// <summary>
+        /// Parses a HTTP Set-Cookie header value to an instance of <see cref="Cookie"/>, and returns a value indicating if parsing succeeded.
+        /// </summary>
+        /// <param name="headerValue"></param>
+        /// <param name="receievedDate"></param>
+        /// <param name="originUri"></param>
+        /// <param name="cookie"></param>
+        /// <returns></returns>
+        public static bool TryParse(string headerValue, DateTimeOffset receievedDate, Uri originUri, out Cookie cookie)
+        {
+            var properties = HeaderProperty.ParseList(headerValue);
+            if (properties == null || properties.Length == 0)
+            {
+                cookie = null;
+                return false;
+            }
+            cookie = new Cookie(properties[0].Name, properties[0].Value, originUri, receievedDate);
+
+            properties = properties.Skip(1).ToArray();
+            cookie.ParseAdditionalProperties(properties);
+            return cookie.GetValidity() == CookieValidity.Valid;
+        }
+
+        private void ParseAdditionalProperties(HeaderProperty[] properties)
         {
             if (properties.TryGet("Domain", out string domain))
             {
@@ -206,20 +229,6 @@ namespace DG.Common.Http.Cookies
             {
                 _maxAge = maxAge;
             }
-        }
-
-        public static bool TryParse(HeaderProperty[] properties, DateTimeOffset receievedDate, Uri originUri, out Cookie cookie)
-        {
-            cookie = null;
-            if (properties == null || properties.Length == 0)
-            {
-                return false;
-            }
-            cookie = new Cookie(properties[0].Name, properties[0].Value, originUri, receievedDate);
-
-            properties = properties.Skip(1).ToArray();
-            cookie.ParseAdditionalProperties(properties);
-            return cookie.GetValidity() == CookieValidity.Valid;
         }
     }
 }

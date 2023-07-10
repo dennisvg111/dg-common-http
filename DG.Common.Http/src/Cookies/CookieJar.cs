@@ -1,5 +1,4 @@
-﻿using DG.Common.Http.Headers;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -25,9 +24,7 @@ namespace DG.Common.Http.Cookies
 
             foreach (var headerValue in cookieHeaderValues)
             {
-                var properties = HeaderProperty.ParseList(headerValue);
-
-                if (!Cookie.TryParse(properties, receivedDate, requestUri, out Cookie cookie))
+                if (!Cookie.TryParse(headerValue, receivedDate, requestUri, out Cookie cookie))
                 {
                     continue;
                 }

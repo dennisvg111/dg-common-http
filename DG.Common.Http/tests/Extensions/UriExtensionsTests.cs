@@ -34,6 +34,7 @@ namespace DG.Common.Http.Tests.Extensions
         [InlineData("https://www.test.com/path#chapter1", "?newquery=x", "https://www.test.com/path?newquery=x#chapter1")]
 
         //fragment overwrite
+        [InlineData("https://www.test.com/path#chapter1", "#chapter2", "https://www.test.com/path#chapter2")]
         [InlineData("https://www.test.com/path#chapter1", "/newpath#chapter2", "https://www.test.com/newpath#chapter2")]
         [InlineData("https://www.test.com/path#chapter1", "https://www.newtest.com/otherpath#chapter2", "https://www.newtest.com/otherpath#chapter2")]
 
