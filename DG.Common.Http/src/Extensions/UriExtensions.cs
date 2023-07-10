@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 namespace DG.Common.Http.Extensions
 {
@@ -12,6 +13,19 @@ namespace DG.Common.Http.Extensions
         public static string GetRoot(this Uri uri)
         {
             return string.Concat(uri.Scheme, uri.Scheme?.Length > 0 ? ":" : "", uri.Authority?.Length > 0 ? "//" : "", uri.Authority);
+        }
+
+        /// <summary>
+        /// Removes the last path segment of the given <see cref="Uri"/>, if it exists.
+        /// </summary>
+        /// <param name="uri"></param>
+        /// <returns></returns>
+        public static Uri RemoveLastSegment(this Uri uri)
+        {
+            var newSegments = uri.Segments.Take(uri.Segments.Length - 1).ToArray();
+            var builder = new UriBuilder(uri);
+            builder.Path = string.Concat(newSegments).TrimEnd('/');
+            return builder.Uri;
         }
 
         /// <summary>
@@ -34,15 +48,20 @@ namespace DG.Common.Http.Extensions
                 return ReplaceFragmentIfNeeded(location, originalUri);
             }
 
-            if (location.StartsWith("//"))
+            if (location.StartsWith("//", StringComparison.Ordinal))
             {
                 return ReplaceFragmentIfNeeded(originalUri.Scheme + ":" + location, originalUri);
             }
 
-            if (location.StartsWith("/"))
+            if (location.StartsWith("/", StringComparison.Ordinal))
             {
                 string root = originalUri.GetRoot();
                 return ReplaceFragmentIfNeeded(root + location, originalUri);
+            }
+
+            if (!location.StartsWith("?", StringComparison.Ordinal) && !location.StartsWith("#", StringComparison.Ordinal))
+            {
+                originalUri = originalUri.RemoveLastSegment();
             }
 
             string combinedUrl = CombineUrlParts(originalUri.GetRoot() + originalUri.AbsolutePath, location);
