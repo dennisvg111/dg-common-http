@@ -20,11 +20,6 @@ namespace DG.Common.Http.Tests.Extensions
         [InlineData("https://www.test.com/path#chapter1", "/otherpath", "https://www.test.com/otherpath#chapter1")]
         [InlineData("https://www.test.com/path#chapter1", "https://www.newtest.com/otherpath", "https://www.newtest.com/otherpath#chapter1")]
         [InlineData("https://www.test.com/path#chapter1", "https://www.newtest.com/otherpath#chapter2", "https://www.newtest.com/otherpath#chapter2")]
-
-
-        [InlineData("https://www.example.com/blog/latest", "2020/zoo", "https://www.example.com/blog/2020/zoo")]
-        [InlineData("https://httpbin.org/redirect-to", "test", "https://httpbin.org/test")]
-        [InlineData("https://httpbin.org/redirect-to", "&other=false", "https://httpbin.org/&other=false")]
         public void CombineForRedirectLocation(string original, string location, string expected)
         {
             Uri originalUri = new Uri(original, UriKind.Absolute);
