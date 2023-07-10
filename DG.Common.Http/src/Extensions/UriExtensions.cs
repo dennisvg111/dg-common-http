@@ -3,16 +3,19 @@ using System.Linq;
 
 namespace DG.Common.Http.Extensions
 {
+    /// <summary>
+    /// This class provides extension methods for <see cref="Uri"/>.
+    /// </summary>
     public static class UriExtensions
     {
         /// <summary>
-        /// Get the root (combination of <see cref="Uri.Scheme"/> and <see cref="Uri.Authority"/>) for the <see cref="Uri"/>.
+        /// Get the root (combination of <see cref="Uri.Scheme"/>, <see cref="Uri.Host"/>, and <see cref="Uri.Port"/> if needed) for the given <see cref="Uri"/>.
         /// </summary>
         /// <param name="uri"></param>
         /// <returns></returns>
         public static string GetRoot(this Uri uri)
         {
-            return string.Concat(uri.Scheme, uri.Scheme?.Length > 0 ? ":" : "", uri.Authority?.Length > 0 ? "//" : "", uri.Authority);
+            return uri.GetComponents(UriComponents.SchemeAndServer, UriFormat.SafeUnescaped);
         }
 
         /// <summary>
