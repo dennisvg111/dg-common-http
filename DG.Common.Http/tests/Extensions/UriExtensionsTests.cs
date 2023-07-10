@@ -12,6 +12,7 @@ namespace DG.Common.Http.Tests.Extensions
 
         //scheme preservation
         [InlineData("https://www.test.com/path?query=value", "//www.test2.com/path?query=value", "https://www.test2.com/path?query=value")]
+        [InlineData("http://www.test.com/path?query=value", "//www.test2.com/path?query=value", "http://www.test2.com/path?query=value")]
 
         //relative url absolute path
         [InlineData("https://www.test.com/path", "/otherpath", "https://www.test.com/otherpath")]
