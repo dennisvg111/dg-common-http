@@ -1,170 +1,83 @@
-﻿using DG.Common.Http.Extensions;
-using DG.Common.Http.Headers;
+﻿using DG.Common.Exceptions;
+using DG.Common.Http.Extensions;
 using System;
-using System.Linq;
 
 namespace DG.Common.Http.Cookies
 {
     public class Cookie : IComparable<Cookie>
     {
-        private readonly string _name;
-        private readonly bool _isHostCookie;
-        private readonly bool _isSecureCookie;
+        private readonly IRawCookie _base;
+        private readonly CookiePath _path;
+        private readonly CookieExpiration _expiration;
 
-        private readonly string _value;
-        private readonly Uri _originUri;
+        private readonly bool _isMarkedHost;
+        private readonly bool _isMarkedSecure;
 
-        private string _domain;
-        private string _path;
+        /// <inheritdoc cref="IRawCookie.Name"/>
+        public string Name => _base.Name;
 
-        private readonly DateTimeOffset _receivedDate;
-        private DateTimeOffset? _expires;
-        private int? _maxAge; //in seconds
-
-        private bool _secure;
-        private bool _httpOnly;
-        private SameSite _samesite = SameSite.Lax;
-
-        public string Key
+        /// <summary>
+        /// Generates a key based on name and path used by the <see cref="CookieJar"/> to identify cookies when adding or replacing cookies.
+        /// </summary>
+        /// <returns></returns>
+        public string GenerateKey()
         {
-            get
+            var domain = string.IsNullOrEmpty(_base.Domain) ? "*" + _base.OriginUri.Host : _base.Domain;
+            var path = string.IsNullOrEmpty(_base.Path) ? _base.OriginUri.AbsolutePath : _base.Path;
+            if (path.Length == 0)
             {
-                var domain = string.IsNullOrEmpty(_domain) ? "*" + _originUri.Host : _domain;
-                var path = string.IsNullOrEmpty(_path) ? _originUri.AbsolutePath : _path;
-                if (path.Length == 0)
-                {
-                    path = "/";
-                }
-                return $"{domain}{path}[{_name}]";
+                path = "/";
             }
+            return $"{domain}{path}[{_base.Name}]";
         }
 
-        private Lazy<string> Path => new Lazy<string>(() => GetCookiePath());
-
-        private Cookie(string name, string value, Uri originUri, DateTimeOffset receivedDate)
+        /// <summary>
+        /// Initializes a new instance of <see cref="Cookie"/> using the given cookie properties.
+        /// </summary>
+        /// <param name="cookieBase"></param>
+        public Cookie(IRawCookie cookieBase)
         {
-            _name = name;
-            _isHostCookie = _name.StartsWith("__Host-", StringComparison.Ordinal);
-            _isSecureCookie = _name.StartsWith("__Secure-", StringComparison.Ordinal);
+            ThrowIf.Parameter.IsNull(cookieBase, nameof(cookieBase));
+            ThrowIf.Parameter.IsNull(cookieBase.OriginUri, nameof(cookieBase.OriginUri));
+            ThrowIf.Parameter.Matches(cookieBase.OriginUri, (uri) => !uri.IsAbsoluteUri, nameof(cookieBase.OriginUri), "Parameter must be an absolute URI.");
+            ThrowIf.Parameter.IsNullOrEmpty(cookieBase.Name, nameof(cookieBase.Name));
 
-            _value = value;
-            _originUri = originUri;
-            _receivedDate = receivedDate;
+            _base = cookieBase;
+            _path = new CookiePath(cookieBase);
+            _expiration = new CookieExpiration(cookieBase);
+
+            _isMarkedHost = cookieBase.Name.StartsWith("__Host-", StringComparison.Ordinal);
+            _isMarkedSecure = cookieBase.Name.StartsWith("__Secure-", StringComparison.Ordinal);
         }
 
-        public CookieValidity GetValidity()
-        {
-            if (_originUri == null || !_originUri.IsAbsoluteUri)
-            {
-                return CookieValidity.MisformedOriginUri;
-            }
-            if (_secure && !_originUri.IsSecure())
-            {
-                return CookieValidity.OriginUriMustBeSecure;
-            }
-
-            if (!string.IsNullOrEmpty(_domain))
-            {
-
-            }
-
-            return CookieValidity.Valid;
-        }
-
-        public bool IsExpired()
-        {
-            if (_maxAge.HasValue)
-            {
-                if (_maxAge <= 0)
-                {
-                    return true;
-                }
-                return DateTimeOffset.UtcNow - _receivedDate > TimeSpan.FromSeconds(_maxAge.Value);
-            }
-            if (_expires.HasValue)
-            {
-                return DateTimeOffset.UtcNow > _expires.Value;
-            }
-            return false;
-        }
 
         public bool AppliesTo(Uri requestUri)
         {
-            if (_secure && !requestUri.IsSecure())
+            if (_base.IsSecure && !requestUri.IsSecure())
             {
                 return false;
             }
-            return GetValidity() == CookieValidity.Valid &&
-                !IsExpired()
-                && IsDomainMatch(requestUri)
-                && IsPathMatch(requestUri);
+            return !IsExpired() && _path.IsMatch(requestUri);
         }
 
-        private bool IsDomainMatch(Uri requestUri)
+        /// <summary>
+        /// Indicates that the cookie is expired, and thus should be removed.
+        /// </summary>
+        /// <returns></returns>
+        public bool IsExpired()
         {
-            if (string.IsNullOrEmpty(_domain))
-            {
-                return requestUri.Host.Equals(_originUri.Host, StringComparison.OrdinalIgnoreCase);
-            }
-
-            var trimmedDomain = _domain.StartsWith(".", StringComparison.Ordinal) ? _domain.Substring(1) : _domain;
-            if (requestUri.Host.Equals(trimmedDomain, StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-            if (requestUri.Host.EndsWith("." + trimmedDomain, StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-            return false;
-        }
-
-        private bool IsPathMatch(Uri requestUri)
-        {
-            var cookiePath = Path.Value;
-            if (cookiePath == "/")
-            {
-                return true;
-            }
-
-            var requestPath = (requestUri.AbsolutePath.Length > 0) ? requestUri.AbsolutePath : "/";
-
-            //case-sensitive
-            if (requestPath.Equals(cookiePath, StringComparison.Ordinal))
-            {
-                return true;
-            }
-            if (requestPath.Length > cookiePath.Length && requestPath.StartsWith(cookiePath, StringComparison.Ordinal) && requestPath[cookiePath.Length] == '/')
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-        private string GetCookiePath()
-        {
-            string cookiePath = _path;
-            if (string.IsNullOrEmpty(cookiePath) || !cookiePath.StartsWith("/", StringComparison.Ordinal))
-            {
-                return cookiePath = _originUri.GetCookieDefaultPath();
-            }
-            if (cookiePath != null && cookiePath.EndsWith("/", StringComparison.Ordinal))
-            {
-                cookiePath = cookiePath.TrimEnd('/');
-            }
-            return cookiePath;
+            return _expiration.IsExpired();
         }
 
         public int CompareTo(Cookie other)
         {
-            int pathComparison = (_path?.Length ?? 0).CompareTo(other._path?.Length ?? 0);
+            int pathComparison = (_base.Path?.Length ?? 0).CompareTo(other._base.Path?.Length ?? 0);
             if (pathComparison != 0)
             {
                 //longest first.
                 return -pathComparison;
             }
-            return _receivedDate.CompareTo(other._receivedDate);
+            return _base.ReceivedDate.CompareTo(other._base.ReceivedDate);
         }
 
         /// <summary>
@@ -173,7 +86,7 @@ namespace DG.Common.Http.Cookies
         /// <returns></returns>
         public override string ToString()
         {
-            return $"{_name}={_value}";
+            return $"{_base.Name}={_base.Value}";
         }
 
         /// <summary>
@@ -186,51 +99,13 @@ namespace DG.Common.Http.Cookies
         /// <returns></returns>
         public static bool TryParse(string headerValue, DateTimeOffset receievedDate, Uri originUri, out Cookie cookie)
         {
-            var properties = HeaderProperty.ParseList(headerValue);
-            if (properties == null || properties.Length == 0)
+            if (!RawHeaderCookie.TryParse(headerValue, receievedDate, originUri, out RawHeaderCookie rawCookie))
             {
                 cookie = null;
                 return false;
             }
-            cookie = new Cookie(properties[0].Name, properties[0].Value, originUri, receievedDate);
-
-            properties = properties.Skip(1).ToArray();
-            cookie.ParseAdditionalProperties(properties);
-            return cookie.GetValidity() == CookieValidity.Valid;
-        }
-
-        private void ParseAdditionalProperties(HeaderProperty[] properties)
-        {
-            if (properties.TryGet("Domain", out string domain))
-            {
-                _domain = domain;
-            }
-            if (properties.TryGet("Path", out string path))
-            {
-                _path = path;
-            }
-
-            if (properties.TryGet("HttpOnly", out _))
-            {
-                _httpOnly = true;
-            }
-            if (properties.TryGet("Secure", out _))
-            {
-                _secure = true;
-            }
-            if (properties.TryGet("SameSite", out string sameSiteString) && Enum.TryParse(sameSiteString, true, out SameSite sameSite))
-            {
-                _samesite = sameSite;
-            }
-
-            if (properties.TryGet("Expires", out string expiresString) && DateTimeOffset.TryParse(expiresString, out DateTimeOffset expires))
-            {
-                _expires = expires;
-            }
-            if (properties.TryGet("Max-Age", out string maxAgeString) && int.TryParse(maxAgeString, out int maxAge))
-            {
-                _maxAge = maxAge;
-            }
+            cookie = new Cookie(rawCookie);
+            return true;
         }
     }
 }

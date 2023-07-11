@@ -31,7 +31,13 @@ namespace DG.Common.Http.Cookies
                 {
                     continue;
                 }
-                _cookies[cookie.Key] = cookie;
+                string key = cookie.GenerateKey();
+                if (cookie.IsExpired())
+                {
+                    _cookies.TryRemove(key, out Cookie _);
+                    continue;
+                }
+                _cookies[key] = cookie;
             }
         }
 

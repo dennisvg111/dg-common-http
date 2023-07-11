@@ -3,6 +3,7 @@ using DG.Common.Http.Fluent;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Net;
+using System.Net.Http;
 using Xunit;
 
 namespace DG.Common.Http.Tests.Fluent
@@ -45,13 +46,16 @@ namespace DG.Common.Http.Tests.Fluent
         public async void CookieJar_Collects()
         {
             var client = HttpClientProvider.ClientForSettings(_settings);
-            var request = FluentRequest.Get.To("/cookies/set?cookie1=value1&cookie2=value2").WithoutRedirects();
             var jar = new CookieJar();
 
-            var result = await client.SendMessageAsync(request);
+            var result = new HttpResponseMessage(HttpStatusCode.Redirect);
+            result.RequestMessage = new HttpRequestMessage(HttpMethod.Post, new System.Uri("https://httpbin.org/cookies/set", System.UriKind.Absolute));
+            result.Headers.Add("Set-Cookie", new string[] { "cookie1=value1; Path=/", "cookie2=value2; Path=/" });
+            int statusCode = (int)result.StatusCode;
+            Assert.InRange(statusCode, 300, 399);
             jar.CollectFrom(result);
 
-            request = FluentRequest.Get.To("/cookies").WithCookieJar(jar);
+            var request = FluentRequest.Get.To("/cookies").WithCookieJar(jar);
             result = await client.SendMessageAsync(request);
             result.EnsureSuccessStatusCode();
 

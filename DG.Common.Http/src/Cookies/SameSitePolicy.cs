@@ -3,7 +3,7 @@
     /// <summary>
     /// Controls whether or not a cookie is sent with cross-site requests, providing some protection against cross-site request forgery attacks (CSRF).
     /// </summary>
-    public enum SameSite
+    public enum SameSitePolicy
     {
         /// <summary>
         /// <para>Means that the cookie is not sent on cross-site requests, such as on requests to load images or frames, but is sent when a user is navigating to the origin site from an external site (for example, when following a link).</para>
