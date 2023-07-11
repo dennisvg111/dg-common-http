@@ -42,6 +42,26 @@ namespace DG.Common.Http.Extensions
         }
 
         /// <summary>
+        /// Gets the default path of the given <see cref="Uri"/>, as defined by RFC 6265 section 5.1.4.
+        /// </summary>
+        /// <param name="uri"></param>
+        /// <returns></returns>
+        public static string GetCookieDefaultPath(this Uri uri)
+        {
+            string cookiePath = uri?.AbsolutePath ?? "";
+            if (string.IsNullOrEmpty(cookiePath))
+            {
+                return "/";
+            }
+            int lastIndex = cookiePath.LastIndexOf('/', 1);
+            if (cookiePath[0] != '/' || lastIndex < 0)
+            {
+                return "/";
+            }
+            return cookiePath.Substring(0, lastIndex);
+        }
+
+        /// <summary>
         /// Gets the absolute <see cref="Uri"/> that is the result of the given original uri and the new (relative or absolute) uri given by the location header.
         /// </summary>
         /// <param name="originalUri"></param>
