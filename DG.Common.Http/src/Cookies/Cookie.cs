@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace DG.Common.Http.Cookies
 {
-    public class Cookie
+    public class Cookie : IComparable<Cookie>
     {
         private readonly string _name;
         private readonly bool _isHostCookie;
@@ -29,7 +29,7 @@ namespace DG.Common.Http.Cookies
         {
             get
             {
-                var domain = string.IsNullOrEmpty(_domain) ? "*." + _originUri.Host : _domain;
+                var domain = string.IsNullOrEmpty(_domain) ? "*" + _originUri.Host : _domain;
                 var path = string.IsNullOrEmpty(_path) ? _originUri.AbsolutePath : _path;
                 if (path.Length == 0)
                 {
@@ -38,6 +38,8 @@ namespace DG.Common.Http.Cookies
                 return $"{domain}{path}[{_name}]";
             }
         }
+
+        private Lazy<string> Path => new Lazy<string>(() => GetCookiePath());
 
         private Cookie(string name, string value, Uri originUri, DateTimeOffset receivedDate)
         {
@@ -102,15 +104,15 @@ namespace DG.Common.Http.Cookies
         {
             if (string.IsNullOrEmpty(_domain))
             {
-                return _originUri.Host.Equals(_originUri.Host, StringComparison.OrdinalIgnoreCase);
+                return requestUri.Host.Equals(_originUri.Host, StringComparison.OrdinalIgnoreCase);
             }
 
             var trimmedDomain = _domain.StartsWith(".", StringComparison.Ordinal) ? _domain.Substring(1) : _domain;
-            if (_originUri.Host.Equals(trimmedDomain, StringComparison.OrdinalIgnoreCase))
+            if (requestUri.Host.Equals(trimmedDomain, StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
-            if (_originUri.Host.EndsWith("." + trimmedDomain, StringComparison.OrdinalIgnoreCase))
+            if (requestUri.Host.EndsWith("." + trimmedDomain, StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
@@ -119,7 +121,7 @@ namespace DG.Common.Http.Cookies
 
         private bool IsPathMatch(Uri requestUri)
         {
-            var cookiePath = GetCookiePath();
+            var cookiePath = Path.Value;
             if (cookiePath == "/")
             {
                 return true;
@@ -145,7 +147,7 @@ namespace DG.Common.Http.Cookies
             string cookiePath = _path;
             if (string.IsNullOrEmpty(cookiePath) || !cookiePath.StartsWith("/", StringComparison.Ordinal))
             {
-                return cookiePath = GetDefaultPath();
+                return cookiePath = _originUri.GetCookieDefaultPath();
             }
             if (cookiePath != null && cookiePath.EndsWith("/", StringComparison.Ordinal))
             {
@@ -154,21 +156,21 @@ namespace DG.Common.Http.Cookies
             return cookiePath;
         }
 
-        private string GetDefaultPath()
+        public int CompareTo(Cookie other)
         {
-            string cookiePath = _originUri.AbsolutePath;
-            if (string.IsNullOrEmpty(cookiePath))
+            int pathComparison = (_path?.Length ?? 0).CompareTo(other._path?.Length ?? 0);
+            if (pathComparison != 0)
             {
-                return "/";
+                //longest first.
+                return -pathComparison;
             }
-            int lastIndex = cookiePath.LastIndexOf('/', 1);
-            if (cookiePath[0] != '/' || lastIndex < 0)
-            {
-                return "/";
-            }
-            return cookiePath.Substring(0, lastIndex);
+            return _receivedDate.CompareTo(other._receivedDate);
         }
 
+        /// <summary>
+        /// Converts this cookie to a string representation in the format <c>name=value</c>.
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             return $"{_name}={_value}";

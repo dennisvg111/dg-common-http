@@ -1,4 +1,5 @@
-﻿using DG.Common.Http.Extensions;
+﻿using DG.Common.Http.Cookies;
+using DG.Common.Http.Extensions;
 using Newtonsoft.Json;
 using System;
 using System.Net.Http;
@@ -12,23 +13,44 @@ namespace DG.Common.Http.Fluent
         private readonly Uri _uri;
         private readonly HttpContent _content;
         private readonly int _maxRedirects = HttpClientSettings.DefaultAutomaticRedirectLimit;
+        private readonly CookieJar _cookieJar;
 
         /// <summary>
         /// The maximum number of redirects that this request will follow automatically.
         /// </summary>
         public int MaxRedirects => _maxRedirects;
 
+        /// <summary>
+        /// The <see cref="CookieJar"/> to be used for this request.
+        /// </summary>
+        public CookieJar CookieJar => _cookieJar;
+
 
         /// <summary>
-        /// Gets a <see cref="HttpRequestMessage"/> instance constructed by this <see cref="FluentRequest"/>.
+        /// <para>Gets a <see cref="HttpRequestMessage"/> instance constructed by this <see cref="FluentRequest"/>.</para>
+        /// <para>Note that it is recommended to send a fluent request directly using <see cref="HttpClientExtensions.SendMessageAsync(HttpClient, FluentRequest)"/>.</para>
         /// </summary>
-        public HttpRequestMessage Message
+        public HttpRequestMessage Message => MessageForBaseUri(null);
+
+        internal HttpRequestMessage MessageForClient(HttpClient client)
         {
-            get
+            return MessageForBaseUri(client.BaseAddress);
+        }
+
+        private HttpRequestMessage MessageForBaseUri(Uri baseUri)
+        {
+            var requestUri = _uri;
+            if (baseUri != null)
             {
-                var message = new HttpRequestMessage(_method, _uri);
-                return message;
+                requestUri = new Uri(baseUri, _uri);
             }
+            var message = new HttpRequestMessage(_method, requestUri);
+            message.Content = _content;
+            if (_cookieJar != null && requestUri.IsAbsoluteUri)
+            {
+                _cookieJar.ApplyTo(message);
+            }
+            return message;
         }
 
         internal FluentRequest(HttpMethod method, Uri uri)
@@ -37,15 +59,16 @@ namespace DG.Common.Http.Fluent
             _uri = uri;
         }
 
-        private FluentRequest(HttpMethod method, Uri uri, HttpContent content, int maxRedirects) : this(method, uri)
+        private FluentRequest(HttpMethod method, Uri uri, HttpContent content, int maxRedirects, CookieJar cookieJar) : this(method, uri)
         {
             _content = content;
             _maxRedirects = maxRedirects;
+            _cookieJar = cookieJar;
         }
 
         public FluentRequest WithContent(FluentFormContent content)
         {
-            return new FluentRequest(_method, _uri, content.Content, _maxRedirects);
+            return new FluentRequest(_method, _uri, content.Content, _maxRedirects, _cookieJar);
         }
 
         public FluentRequest WithSerializedJsonContent<T>(T content)
@@ -57,17 +80,22 @@ namespace DG.Common.Http.Fluent
         public FluentRequest WithJson(string json)
         {
             var messageContent = new StringContent(json, Encoding.UTF8, "application/json");
-            return new FluentRequest(_method, _uri, messageContent, _maxRedirects);
+            return new FluentRequest(_method, _uri, messageContent, _maxRedirects, _cookieJar);
         }
 
         public FluentRequest LimitAutomaticRedirectsTo(int maxRedirects)
         {
-            return new FluentRequest(_method, _uri, _content, maxRedirects);
+            return new FluentRequest(_method, _uri, _content, maxRedirects, _cookieJar);
         }
 
         public FluentRequest WithoutRedirects()
         {
-            return new FluentRequest(_method, _uri, _content, 0);
+            return new FluentRequest(_method, _uri, _content, 0, _cookieJar);
+        }
+
+        public FluentRequest WithCookieJar(CookieJar cookieJar)
+        {
+            return new FluentRequest(_method, _uri, _content, _maxRedirects, cookieJar);
         }
 
         /// <summary>
@@ -123,7 +151,7 @@ namespace DG.Common.Http.Fluent
             var location = response.Headers.Location;
             var solvedLocationUri = response.RequestMessage.RequestUri.CombineForRedirectLocation(location);
 
-            var baseRedirect = new FluentRequest(method, solvedLocationUri, changeToGet ? null : _content, _maxRedirects - 1);
+            var baseRedirect = new FluentRequest(method, solvedLocationUri, changeToGet ? null : _content, _maxRedirects - 1, _cookieJar);
 
             return baseRedirect;
         }

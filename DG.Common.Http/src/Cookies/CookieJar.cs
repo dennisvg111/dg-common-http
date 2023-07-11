@@ -1,7 +1,10 @@
-﻿using System;
+﻿using DG.Common.Http.Extensions;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
+using System.Text;
 
 namespace DG.Common.Http.Cookies
 {
@@ -29,6 +32,34 @@ namespace DG.Common.Http.Cookies
                     continue;
                 }
                 _cookies[cookie.Key] = cookie;
+            }
+        }
+
+        public void ApplyTo(HttpRequestMessage request)
+        {
+            var uri = request.RequestUri;
+            var cookieBuilder = new StringBuilder();
+            if (request.Headers.TryGetValues("Cookie", out IEnumerable<string> values) && values.Any())
+            {
+                cookieBuilder.Append(values.First());
+            }
+            bool replaceNeeded = false;
+            foreach (var cookie in _cookies.Values.OrderBy(c => c))
+            {
+                if (!cookie.AppliesTo(uri))
+                {
+                    continue;
+                }
+                replaceNeeded = true;
+                if (cookieBuilder.Length > 0)
+                {
+                    cookieBuilder.Append("; ");
+                }
+                cookieBuilder.Append(cookie);
+            }
+            if (replaceNeeded)
+            {
+                request.Headers.AddOrReplace("Cookie", cookieBuilder.ToString());
             }
         }
     }

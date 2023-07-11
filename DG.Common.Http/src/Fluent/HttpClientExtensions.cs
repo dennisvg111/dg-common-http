@@ -22,9 +22,13 @@ namespace DG.Common.Http.Fluent
 
         private static async Task<HttpResponseMessage> FollowRedirects(HttpClient client, FluentRequest messageBuilder)
         {
-            var request = messageBuilder.Message;
+            var request = messageBuilder.MessageForClient(client);
 
             var response = await client.SendAsync(request);
+            if (messageBuilder.CookieJar != null)
+            {
+                messageBuilder.CookieJar.CollectFrom(response);
+            }
 
             if (response.IsRedirect() && messageBuilder.MaxRedirects > 0)
             {

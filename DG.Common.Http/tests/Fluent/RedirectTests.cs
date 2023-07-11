@@ -50,6 +50,9 @@ namespace DG.Common.Http.Tests.Fluent
 
             var result = await client.SendMessageAsync(message);
             jar.CollectFrom(result);
+
+            message = FluentRequest.Get.To("/cookies").WithCookieJar(jar);
+            result = await client.SendMessageAsync(message);
             result.EnsureSuccessStatusCode();
 
             var content = await result.Content.ReadAsStringAsync();
