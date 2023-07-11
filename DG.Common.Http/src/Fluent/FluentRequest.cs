@@ -21,12 +21,6 @@ namespace DG.Common.Http.Fluent
         public int MaxRedirects => _maxRedirects;
 
         /// <summary>
-        /// The <see cref="CookieJar"/> to be used for this request.
-        /// </summary>
-        public CookieJar CookieJar => _cookieJar;
-
-
-        /// <summary>
         /// <para>Gets a <see cref="HttpRequestMessage"/> instance constructed by this <see cref="FluentRequest"/>.</para>
         /// <para>Note that it is recommended to send a fluent request directly using <see cref="HttpClientExtensions.SendMessageAsync(HttpClient, FluentRequest)"/>.</para>
         /// </summary>
@@ -139,7 +133,8 @@ namespace DG.Common.Http.Fluent
         }
 
         /// <summary>
-        /// Creates a new instance of <see cref="FluentRequest"/> that describes the redirection by the given <see cref="HttpResponseMessage"/>.
+        /// <para>Creates a new instance of <see cref="FluentRequest"/> that describes the redirection by the given <see cref="HttpResponseMessage"/>.</para>
+        /// <para>Note that the value of <see cref="MaxRedirects"/> will always be exactly one less than the original request.</para>
         /// </summary>
         /// <param name="response"></param>
         /// <returns></returns>
@@ -154,6 +149,15 @@ namespace DG.Common.Http.Fluent
             var baseRedirect = new FluentRequest(method, solvedLocationUri, changeToGet ? null : _content, _maxRedirects - 1, _cookieJar);
 
             return baseRedirect;
+        }
+
+        internal void CollectCookiesIfNeeded(HttpResponseMessage response)
+        {
+            if (_cookieJar == null)
+            {
+                return;
+            }
+            _cookieJar.CollectFrom(response);
         }
     }
 }

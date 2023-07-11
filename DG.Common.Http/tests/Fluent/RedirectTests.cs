@@ -17,10 +17,10 @@ namespace DG.Common.Http.Tests.Fluent
         public async void LimitAutomaticRedirectsTo_Works()
         {
             var client = HttpClientProvider.ClientForSettings(_settings);
-            var message = FluentRequest.Get.To("/redirect-to?url=%3Furl%3Dfinal-url")
+            var request = FluentRequest.Get.To("/redirect-to?url=%3Furl%3Dfinal-url")
                 .LimitAutomaticRedirectsTo(1);
 
-            var result = await client.SendMessageAsync(message);
+            var result = await client.SendMessageAsync(request);
 
             int statusCode = (int)result.StatusCode;
             Assert.InRange(statusCode, 300, 399);
@@ -32,9 +32,9 @@ namespace DG.Common.Http.Tests.Fluent
         public async void Redirection_Works()
         {
             var client = HttpClientProvider.ClientForSettings(_settings);
-            var message = FluentRequest.Get.To("/redirect-to?url=%3Furl%3Dfinal-url");
+            var request = FluentRequest.Get.To("/redirect-to?url=%3Furl%3Dfinal-url");
 
-            var result = await client.SendMessageAsync(message);
+            var result = await client.SendMessageAsync(request);
             Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
 
             var actual = result.RequestMessage.RequestUri.AbsoluteUri;
@@ -45,14 +45,14 @@ namespace DG.Common.Http.Tests.Fluent
         public async void CookieJar_Collects()
         {
             var client = HttpClientProvider.ClientForSettings(_settings);
-            var message = FluentRequest.Get.To("/cookies/set?cookie1=value1&cookie2=value2").WithoutRedirects();
+            var request = FluentRequest.Get.To("/cookies/set?cookie1=value1&cookie2=value2").WithoutRedirects();
             var jar = new CookieJar();
 
-            var result = await client.SendMessageAsync(message);
+            var result = await client.SendMessageAsync(request);
             jar.CollectFrom(result);
 
-            message = FluentRequest.Get.To("/cookies").WithCookieJar(jar);
-            result = await client.SendMessageAsync(message);
+            request = FluentRequest.Get.To("/cookies").WithCookieJar(jar);
+            result = await client.SendMessageAsync(request);
             result.EnsureSuccessStatusCode();
 
             var content = await result.Content.ReadAsStringAsync();
