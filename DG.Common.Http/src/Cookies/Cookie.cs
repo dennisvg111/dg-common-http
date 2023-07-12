@@ -50,7 +50,6 @@ namespace DG.Common.Http.Cookies
             _isMarkedSecure = cookieBase.Name.StartsWith("__Secure-", StringComparison.Ordinal);
         }
 
-
         public bool AppliesTo(Uri requestUri)
         {
             if (_base.IsSecure && !requestUri.IsSecure())
