@@ -21,7 +21,7 @@ namespace DG.Common.Http.Tests.Fluent
             var request = FluentRequest.Get.To("/redirect-to?url=%3Furl%3Dfinal-url")
                 .LimitAutomaticRedirectsTo(1);
 
-            var result = await client.SendMessageAsync(request);
+            var result = await client.SendAsync(request);
 
             int statusCode = (int)result.StatusCode;
             Assert.InRange(statusCode, 300, 399);
@@ -35,7 +35,7 @@ namespace DG.Common.Http.Tests.Fluent
             var client = HttpClientProvider.ClientForSettings(_settings);
             var request = FluentRequest.Get.To("/redirect-to?url=%3Furl%3Dfinal-url");
 
-            var result = await client.SendMessageAsync(request);
+            var result = await client.SendAsync(request);
             Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
 
             var actual = result.RequestMessage.RequestUri.AbsoluteUri;
@@ -56,7 +56,7 @@ namespace DG.Common.Http.Tests.Fluent
             jar.CollectFrom(result);
 
             var request = FluentRequest.Get.To("/cookies").WithCookieJar(jar);
-            result = await client.SendMessageAsync(request);
+            result = await client.SendAsync(request);
             result.EnsureSuccessStatusCode();
 
             var content = await result.Content.ReadAsStringAsync();

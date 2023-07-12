@@ -15,7 +15,7 @@ namespace DG.Common.Http.Fluent
         /// <param name="client">The client used to send a <see cref="HttpRequestMessage"/>.</param>
         /// <param name="request">The <see cref="FluentRequest"/> used to create a <see cref="HttpRequestMessage"/>.</param>
         /// <returns>Returns a <see cref="Task{TResult}"/> object representing the asynchronous operation.</returns>
-        public static async Task<HttpResponseMessage> SendMessageAsync(this HttpClient client, FluentRequest request)
+        public static async Task<HttpResponseMessage> SendAsync(this HttpClient client, FluentRequest request)
         {
             var message = request.MessageForClient(client);
 
@@ -25,7 +25,7 @@ namespace DG.Common.Http.Fluent
             if (response.IsRedirect() && request.MaxRedirects > 0)
             {
                 var redirect = request.RedirectForResponse(response);
-                return await SendMessageAsync(client, redirect);
+                return await SendAsync(client, redirect);
             }
 
             return response;

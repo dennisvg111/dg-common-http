@@ -22,7 +22,7 @@ namespace DG.Common.Http.Fluent
 
         /// <summary>
         /// <para>Gets a <see cref="HttpRequestMessage"/> instance constructed by this <see cref="FluentRequest"/>.</para>
-        /// <para>Note that it is recommended to send a fluent request directly using <see cref="HttpClientExtensions.SendMessageAsync(HttpClient, FluentRequest)"/>.</para>
+        /// <para>Note that it is recommended to send a fluent request directly using <see cref="HttpClientExtensions.SendAsync(HttpClient, FluentRequest)"/>.</para>
         /// </summary>
         public HttpRequestMessage Message => MessageForBaseUri(null);
 
