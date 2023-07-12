@@ -7,6 +7,11 @@ namespace DG.Common.Http.Cookies
         private readonly bool _instantExpiration;
         private readonly DateTimeOffset? _expirationDate;
 
+        /// <summary>
+        /// Indicates if this cookie has either a max age or an expires date.
+        /// </summary>
+        public bool HasExpiration => _expirationDate.HasValue;
+
         public CookieExpiration(IRawCookie cookieDough)
         {
             if (cookieDough.MaxAge.HasValue)
@@ -27,7 +32,7 @@ namespace DG.Common.Http.Cookies
         /// Indicates that the cookie is expired, and thus should be removed.
         /// </summary>
         /// <returns></returns>
-        public bool IsExpired()
+        public bool IsExpiredOn(DateTimeOffset currentDate)
         {
             if (_instantExpiration)
             {
@@ -37,7 +42,7 @@ namespace DG.Common.Http.Cookies
             {
                 return false;
             }
-            return DateTimeOffset.UtcNow > _expirationDate.Value;
+            return currentDate > _expirationDate.Value;
         }
     }
 }

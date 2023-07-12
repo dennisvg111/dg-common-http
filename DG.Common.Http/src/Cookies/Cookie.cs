@@ -16,6 +16,14 @@ namespace DG.Common.Http.Cookies
         /// <inheritdoc cref="IRawCookie.Name"/>
         public string Name => _base.Name;
 
+        /// <inheritdoc cref="IRawCookie.Value"/>
+        public string Value => _base.Value;
+
+        /// <summary>
+        /// Indicates if this is a session cookie.
+        /// </summary>
+        public bool IsSessionCookie => !_expiration.HasExpiration;
+
         /// <summary>
         /// Generates a key based on name and path used by the <see cref="CookieJar"/> to identify cookies when adding or replacing cookies.
         /// </summary>
@@ -65,7 +73,7 @@ namespace DG.Common.Http.Cookies
         /// <returns></returns>
         public bool IsExpired()
         {
-            return _expiration.IsExpired();
+            return _expiration.IsExpiredOn(DateTimeOffset.UtcNow);
         }
 
         public int CompareTo(Cookie other)
