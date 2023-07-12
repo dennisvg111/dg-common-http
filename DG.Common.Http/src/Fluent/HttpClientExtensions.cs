@@ -10,7 +10,7 @@ namespace DG.Common.Http.Fluent
     public static class HttpClientExtensions
     {
         /// <summary>
-        /// Send the HTTP request created by the given <see cref="FluentRequest"/> as an asynchronous operation.
+        /// Send an HTTP request based on the given <see cref="FluentRequest"/> as an asynchronous operation.
         /// </summary>
         /// <param name="client">The client used to send a <see cref="HttpRequestMessage"/>.</param>
         /// <param name="request">The <see cref="FluentRequest"/> used to create a <see cref="HttpRequestMessage"/>.</param>
