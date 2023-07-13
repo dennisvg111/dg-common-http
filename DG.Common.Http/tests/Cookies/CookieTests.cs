@@ -62,5 +62,70 @@ namespace DG.Common.Http.Tests.Cookies
             Assert.True(cookie.IsExpired() == isExpired, $"cookie.{nameof(isExpired)}() should return {isExpired}.");
             Assert.False(cookie.IsSessionCookie, "Cookie should not be marked as session cookie.");
         }
+
+        [Fact]
+        public void IsValid_InValidDomain()
+        {
+            string headerValue = $"qwerty=219ffwef9w0f; Domain=somecompany.co.uk";
+            Uri origin = new Uri("https://originalcompany.com", UriKind.Absolute);
+
+            Assert.True(Cookie.TryParse(headerValue, _received, origin, out Cookie cookie));
+
+            Assert.False(cookie.IsValid(out string reason));
+        }
+
+        [Fact]
+        public void IsValid_HigherDomain()
+        {
+            string headerValue = $"sessionId=e8bb43229de9; Domain=foo.example.com";
+            Uri origin = new Uri("https://example.com", UriKind.Absolute);
+
+            Assert.True(Cookie.TryParse(headerValue, _received, origin, out Cookie cookie));
+
+            Assert.False(cookie.IsValid(out string reason));
+        }
+
+        [Fact]
+        public void IsValid_InvalidTld()
+        {
+            string headerValue = $"qwerty=219ffwef9w0f; Domain=.com";
+            Uri origin = new Uri("https://originalcompany.com", UriKind.Absolute);
+
+            Assert.True(Cookie.TryParse(headerValue, _received, origin, out Cookie cookie));
+
+            Assert.False(cookie.IsValid(out string reason));
+        }
+
+        [Fact]
+        public void IsValid_InvalidIp()
+        {
+            string headerValue = $"ip=test; Domain=192.168.127.108";
+            Uri origin = new Uri("http://192.168.127.108", UriKind.Absolute);
+
+            Assert.True(Cookie.TryParse(headerValue, _received, origin, out Cookie cookie));
+
+            Assert.False(cookie.IsValid(out string reason));
+        }
+
+        [Theory]
+        [InlineData(SameSitePolicy.Lax, false, true)]
+        [InlineData(SameSitePolicy.Lax, true, true)]
+        [InlineData(SameSitePolicy.Strict, false, true)]
+        [InlineData(SameSitePolicy.Strict, true, true)]
+        [InlineData(SameSitePolicy.None, false, false)]
+        [InlineData(SameSitePolicy.None, true, true)]
+        public void IsValid_SameSiteSecure(SameSitePolicy policy, bool secure, bool expected)
+        {
+            string headerValue = $"ip=test; SameSite={policy}";
+            if (secure)
+            {
+                headerValue += "; Secure";
+            }
+
+            Assert.True(Cookie.TryParse(headerValue, _received, _defaultOriginUri, out Cookie cookie));
+
+            var actual = cookie.IsValid(out string reason);
+            Assert.True(actual == expected, $"Cookie should{(expected ? "" : " not")} be validated.");
+        }
     }
 }

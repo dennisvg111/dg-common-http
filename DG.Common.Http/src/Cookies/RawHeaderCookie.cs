@@ -1,5 +1,4 @@
-﻿using DG.Common.Http.Extensions;
-using DG.Common.Http.Headers;
+﻿using DG.Common.Http.Headers;
 using System;
 using System.Linq;
 
@@ -67,25 +66,6 @@ namespace DG.Common.Http.Cookies
             _receivedDate = receivedDate;
         }
 
-        public CookieValidity GetValidity()
-        {
-            if (_originUri == null || !_originUri.IsAbsoluteUri)
-            {
-                return CookieValidity.MisformedOriginUri;
-            }
-            if (_secure && !_originUri.IsSecure())
-            {
-                return CookieValidity.OriginUriMustBeSecure;
-            }
-
-            if (!string.IsNullOrEmpty(_domain))
-            {
-
-            }
-
-            return CookieValidity.Valid;
-        }
-
         /// <summary>
         /// Parses a HTTP Set-Cookie header value to an instance of <see cref="Cookie"/>, and returns a value indicating if parsing succeeded.
         /// </summary>
@@ -96,8 +76,13 @@ namespace DG.Common.Http.Cookies
         /// <returns></returns>
         public static bool TryParse(string headerValue, DateTimeOffset receievedDate, Uri originUri, out RawHeaderCookie cookie)
         {
+            if (!headerValue.Contains("="))
+            {
+                cookie = null;
+                return false;
+            }
             var properties = HeaderProperty.ParseList(headerValue);
-            if (properties == null || properties.Length == 0)
+            if (properties == null || properties.Length == 0 || (properties[0].Name?.Length ?? 0) == 0)
             {
                 cookie = null;
                 return false;
@@ -106,7 +91,7 @@ namespace DG.Common.Http.Cookies
 
             properties = properties.Skip(1).ToArray();
             cookie.ParseAdditionalProperties(properties);
-            return cookie.GetValidity() == CookieValidity.Valid;
+            return true;
         }
 
         private void ParseAdditionalProperties(HeaderProperty[] properties)

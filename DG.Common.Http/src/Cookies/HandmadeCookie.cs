@@ -81,6 +81,20 @@ namespace DG.Common.Http.Cookies
             };
         }
 
+        public static HandmadeCookie Copy(IRawCookie cookie)
+        {
+            return new HandmadeCookie(cookie.Name, cookie.Value, cookie.OriginUri, cookie.ReceivedDate)
+            {
+                Domain = cookie.Domain,
+                Path = cookie.Path,
+                IsSecure = cookie.IsSecure,
+                HttpOnly = cookie.HttpOnly,
+                SameSitePolicy = cookie.SameSitePolicy,
+                Expires = cookie.Expires,
+                MaxAge = cookie.MaxAge
+            };
+        }
+
         /// <summary>
         /// Returns a read-only finished <see cref="Cookie"/> instance.
         /// </summary>

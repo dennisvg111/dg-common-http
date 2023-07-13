@@ -67,6 +67,25 @@ namespace DG.Common.Http.Cookies
             return !IsExpired() && _path.IsMatch(requestUri);
         }
 
+        public bool IsValid(out string reason)
+        {
+            foreach (var rule in CookieRule.DefaultRules)
+            {
+                if (!IsValidAccordingTo(rule))
+                {
+                    reason = rule.Name;
+                    return false;
+                }
+            }
+            reason = string.Empty;
+            return true;
+        }
+
+        public bool IsValidAccordingTo(CookieRule rule)
+        {
+            return rule.CheckCookie(_base);
+        }
+
         /// <summary>
         /// Indicates that the cookie is expired, and thus should be removed.
         /// </summary>

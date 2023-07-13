@@ -2,7 +2,7 @@
 
 namespace DG.Common.Http.Cookies
 {
-    internal class CookiePath
+    public class CookiePath
     {
         private readonly Uri _originUri;
         private readonly string _trimmedDomain;
@@ -27,6 +27,23 @@ namespace DG.Common.Http.Cookies
         public bool IsMatch(Uri requestUri)
         {
             return IsDomainMatch(requestUri) && IsPathMatch(requestUri);
+        }
+
+        public bool IsValidDomain()
+        {
+            if (string.IsNullOrEmpty(_trimmedDomain))
+            {
+                return true;
+            }
+            if (!_trimmedDomain.Trim('.').Contains("."))
+            {
+                return false;
+            }
+            if (!Uri.TryCreate("https://" + _trimmedDomain, UriKind.Absolute, out Uri fakeUri) || fakeUri.Host != _trimmedDomain)
+            {
+                return false;
+            }
+            return IsDomainMatch(_originUri);
         }
 
         private bool IsDomainMatch(Uri requestUri)
