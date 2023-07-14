@@ -11,28 +11,35 @@ namespace DG.Common.Http.Cookies
     public class CookieRule
     {
         #region Default rules list
-        private static readonly CookieRule[] _defaultRules = new CookieRule[]
+        private static readonly CookieRule[] _standardRules = new CookieRule[]
         {
             CookieRule.ForRule("Secure cookie must have secure origin.")
                 .ApplyIf(c => c.IsSecure)
                 .AndCheckIf(c => c.OriginUri.IsSecure()),
+
             CookieRule.ForRule("Domain cannot be an IP address.")
                 .ApplyIf(c => !string.IsNullOrEmpty(c.Domain))
                 .AndCheckIf(c => !IPAddress.TryParse(c.Domain, out IPAddress _))
                 .AndCheckIf(c => !IPAddress.TryParse(c.OriginUri.Host, out IPAddress _)),
+
             CookieRule.ForRule("Domain is not valid.")
                 .ApplyIf(c => !string.IsNullOrEmpty(c.Domain))
-                .AndCheckIf(c => new CookiePath(c).IsValidDomain()),
+                .AndCheckIf(c => c.Domain.Trim('.').Contains("."))
+                .AndCheckIf(c => Uri.TryCreate("https://" + c.Domain.TrimStart('.'), UriKind.Absolute, out Uri fakeUri) && fakeUri.Host == c.Domain.TrimStart('.'))
+                .AndCheckIf(c => new CookiePath(c).IsDomainMatch(c.OriginUri)),
+
             CookieRule.ForRule("Cookie named with __Host- prefix should adhere to host-cookie rules.")
                 .ApplyIf(c => c.Name.StartsWith("__Host-", StringComparison.Ordinal))
                 .AndCheckIf(c => c.IsSecure)
                 .AndCheckIf(c => c.OriginUri.IsSecure())
                 .AndCheckIf(c => string.IsNullOrEmpty(c.Domain))
                 .AndCheckIf(c => c.Path == "/"),
+
             CookieRule.ForRule("Cookie named with __Secure- prefix should adhere to secure-cookie rules.")
                 .ApplyIf(c => c.Name.StartsWith("__Secure-", StringComparison.Ordinal))
                 .AndCheckIf(c => c.IsSecure)
                 .AndCheckIf(c => c.OriginUri.IsSecure()),
+
             CookieRule.ForRule("Cookie with SameSite=None must also be set as Secure.")
                 .ApplyIf(c => c.SameSitePolicy == SameSitePolicy.None)
                 .AndCheckIf(c => c.IsSecure)
@@ -41,7 +48,7 @@ namespace DG.Common.Http.Cookies
         /// <summary>
         /// The default rules for cookies to be valid, according to RFC 6265.
         /// </summary>
-        public static IReadOnlyList<CookieRule> DefaultRules => _defaultRules;
+        public static IReadOnlyList<CookieRule> StandardRules => _standardRules;
         #endregion
 
         private readonly string _ruleName;

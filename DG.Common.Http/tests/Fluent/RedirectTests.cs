@@ -51,8 +51,6 @@ namespace DG.Common.Http.Tests.Fluent
             var result = new HttpResponseMessage(HttpStatusCode.Redirect);
             result.RequestMessage = new HttpRequestMessage(HttpMethod.Post, new System.Uri("https://httpbin.org/cookies/set", System.UriKind.Absolute));
             result.Headers.Add("Set-Cookie", new string[] { "cookie1=value1; Path=/", "cookie2=value2; Path=/" });
-            int statusCode = (int)result.StatusCode;
-            Assert.InRange(statusCode, 300, 399);
             jar.CollectFrom(result);
 
             var request = FluentRequest.Get.To("/cookies").WithCookieJar(jar);

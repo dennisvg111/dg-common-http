@@ -29,24 +29,7 @@ namespace DG.Common.Http.Cookies
             return IsDomainMatch(requestUri) && IsPathMatch(requestUri);
         }
 
-        public bool IsValidDomain()
-        {
-            if (string.IsNullOrEmpty(_trimmedDomain))
-            {
-                return true;
-            }
-            if (!_trimmedDomain.Trim('.').Contains("."))
-            {
-                return false;
-            }
-            if (!Uri.TryCreate("https://" + _trimmedDomain, UriKind.Absolute, out Uri fakeUri) || fakeUri.Host != _trimmedDomain)
-            {
-                return false;
-            }
-            return IsDomainMatch(_originUri);
-        }
-
-        private bool IsDomainMatch(Uri requestUri)
+        public bool IsDomainMatch(Uri requestUri)
         {
             if (string.IsNullOrEmpty(_trimmedDomain))
             {
@@ -64,7 +47,7 @@ namespace DG.Common.Http.Cookies
             return false;
         }
 
-        private bool IsPathMatch(Uri requestUri)
+        public bool IsPathMatch(Uri requestUri)
         {
             var cookiePath = _matchPath.Value;
             if (cookiePath == "/")

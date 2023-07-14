@@ -69,7 +69,7 @@ namespace DG.Common.Http.Cookies
 
         public bool IsValid(out string reason)
         {
-            foreach (var rule in CookieRule.DefaultRules)
+            foreach (var rule in CookieRule.StandardRules)
             {
                 if (!IsValidAccordingTo(rule))
                 {
