@@ -1,4 +1,5 @@
-﻿using DG.Common.Http.Cookies;
+﻿using DG.Common.Http.Authorization;
+using DG.Common.Http.Cookies;
 using DG.Common.Http.Extensions;
 using Newtonsoft.Json;
 using System;
@@ -14,6 +15,7 @@ namespace DG.Common.Http.Fluent
         private readonly HttpContent _content;
         private readonly int _maxRedirects = HttpClientSettings.DefaultAutomaticRedirectLimit;
         private readonly CookieJar _cookieJar;
+        private readonly IAuthorizationHeaderProvider _authorizationProvider;
 
         /// <summary>
         /// The maximum number of redirects that this request will follow automatically.
@@ -44,6 +46,7 @@ namespace DG.Common.Http.Fluent
             {
                 _cookieJar.ApplyTo(message);
             }
+            _authorizationProvider.TryDecorateMessage(message);
             return message;
         }
 
@@ -53,16 +56,17 @@ namespace DG.Common.Http.Fluent
             _uri = uri;
         }
 
-        private FluentRequest(HttpMethod method, Uri uri, HttpContent content, int maxRedirects, CookieJar cookieJar) : this(method, uri)
+        private FluentRequest(HttpMethod method, Uri uri, HttpContent content, int maxRedirects, CookieJar cookieJar, IAuthorizationHeaderProvider authorization) : this(method, uri)
         {
             _content = content;
             _maxRedirects = maxRedirects;
             _cookieJar = cookieJar;
+            _authorizationProvider = authorization;
         }
 
         public FluentRequest WithContent(FluentFormContent content)
         {
-            return new FluentRequest(_method, _uri, content.Content, _maxRedirects, _cookieJar);
+            return new FluentRequest(_method, _uri, content.Content, _maxRedirects, _cookieJar, _authorizationProvider);
         }
 
         public FluentRequest WithSerializedJsonContent<T>(T content)
@@ -74,22 +78,32 @@ namespace DG.Common.Http.Fluent
         public FluentRequest WithJson(string json)
         {
             var messageContent = new StringContent(json, Encoding.UTF8, "application/json");
-            return new FluentRequest(_method, _uri, messageContent, _maxRedirects, _cookieJar);
+            return new FluentRequest(_method, _uri, messageContent, _maxRedirects, _cookieJar, _authorizationProvider);
         }
 
         public FluentRequest LimitAutomaticRedirectsTo(int maxRedirects)
         {
-            return new FluentRequest(_method, _uri, _content, maxRedirects, _cookieJar);
+            return new FluentRequest(_method, _uri, _content, maxRedirects, _cookieJar, _authorizationProvider);
         }
 
         public FluentRequest WithoutRedirects()
         {
-            return new FluentRequest(_method, _uri, _content, 0, _cookieJar);
+            return new FluentRequest(_method, _uri, _content, 0, _cookieJar, _authorizationProvider);
         }
 
         public FluentRequest WithCookieJar(CookieJar cookieJar)
         {
-            return new FluentRequest(_method, _uri, _content, _maxRedirects, cookieJar);
+            return new FluentRequest(_method, _uri, _content, _maxRedirects, cookieJar, _authorizationProvider);
+        }
+
+        public FluentRequest WithAuthorizationHeader(string authorization)
+        {
+            return WithAuthorizationHeaderProvider(new ConstantAuthorizationHeaderProvider(authorization));
+        }
+
+        public FluentRequest WithAuthorizationHeaderProvider(IAuthorizationHeaderProvider authorization)
+        {
+            return new FluentRequest(_method, _uri, _content, _maxRedirects, _cookieJar, authorization);
         }
 
         /// <summary>
@@ -146,7 +160,7 @@ namespace DG.Common.Http.Fluent
             var location = response.Headers.Location;
             var solvedLocationUri = response.RequestMessage.RequestUri.CombineForRedirectLocation(location);
 
-            var baseRedirect = new FluentRequest(method, solvedLocationUri, changeToGet ? null : _content, _maxRedirects - 1, _cookieJar);
+            var baseRedirect = new FluentRequest(method, solvedLocationUri, changeToGet ? null : _content, _maxRedirects - 1, _cookieJar, _authorizationProvider);
 
             return baseRedirect;
         }
