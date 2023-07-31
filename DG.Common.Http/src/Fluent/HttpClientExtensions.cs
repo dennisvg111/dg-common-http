@@ -17,7 +17,7 @@ namespace DG.Common.Http.Fluent
         /// <returns>Returns a <see cref="Task{TResult}"/> object representing the asynchronous operation.</returns>
         public static async Task<HttpResponseMessage> SendAsync(this HttpClient client, FluentRequest request)
         {
-            var message = request.MessageForClient(client);
+            var message = request.MessageForBaseUri(client.BaseAddress);
 
             var response = await client.SendAsync(message);
             request.CollectCookiesIfNeeded(response);

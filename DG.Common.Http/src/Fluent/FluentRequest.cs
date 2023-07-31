@@ -28,12 +28,13 @@ namespace DG.Common.Http.Fluent
         /// </summary>
         public HttpRequestMessage Message => MessageForBaseUri(null);
 
-        internal HttpRequestMessage MessageForClient(HttpClient client)
-        {
-            return MessageForBaseUri(client.BaseAddress);
-        }
-
-        private HttpRequestMessage MessageForBaseUri(Uri baseUri)
+        /// <summary>
+        /// <para>Gets a <see cref="HttpRequestMessage"/> instance constructed by this <see cref="FluentRequest"/>.</para>
+        /// <para>Note that it is recommended to send a fluent request directly using <see cref="HttpClientExtensions.SendAsync(HttpClient, FluentRequest)"/>.</para>
+        /// </summary>
+        /// <param name="baseUri">The base <see cref="Uri"/> for this request. This will be used for things like determining which cookies should be applied to this request message.</param>
+        /// <returns></returns>
+        public HttpRequestMessage MessageForBaseUri(Uri baseUri)
         {
             var requestUri = _uri;
             if (baseUri != null)
@@ -46,7 +47,10 @@ namespace DG.Common.Http.Fluent
             {
                 _cookieJar.ApplyTo(message);
             }
-            _authorizationProvider.TryDecorateMessage(message);
+            if (_authorizationProvider != null && _authorizationProvider.IsAuthorized)
+            {
+                _authorizationProvider.TryDecorateMessage(message);
+            }
             return message;
         }
 
