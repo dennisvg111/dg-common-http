@@ -1,4 +1,4 @@
-﻿namespace DG.Common.Http.Authorization.OAuth
+﻿namespace DG.Common.Http.Authorization
 {
     public interface IExpiringAuthorizationProvider
     {

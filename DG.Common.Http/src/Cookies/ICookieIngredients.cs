@@ -5,7 +5,7 @@ namespace DG.Common.Http.Cookies
     /// <summary>
     /// Defines the properties a cookie needs to contain in order to be used in a <see cref="CookieJar"/>
     /// </summary>
-    public interface IRawCookie
+    public interface ICookieIngredients
     {
         /// <summary>
         /// The name of this cookie.

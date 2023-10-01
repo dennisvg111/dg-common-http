@@ -6,17 +6,17 @@ namespace DG.Common.Http.Cookies
 {
     public class Cookie : IComparable<Cookie>
     {
-        private readonly IRawCookie _base;
+        private readonly ICookieIngredients _base;
         private readonly CookiePath _path;
         private readonly CookieExpiration _expiration;
 
         private readonly bool _isMarkedHost;
         private readonly bool _isMarkedSecure;
 
-        /// <inheritdoc cref="IRawCookie.Name"/>
+        /// <inheritdoc cref="ICookieIngredients.Name"/>
         public string Name => _base.Name;
 
-        /// <inheritdoc cref="IRawCookie.Value"/>
+        /// <inheritdoc cref="ICookieIngredients.Value"/>
         public string Value => _base.Value;
 
         /// <summary>
@@ -43,7 +43,7 @@ namespace DG.Common.Http.Cookies
         /// Initializes a new instance of <see cref="Cookie"/> using the given cookie properties.
         /// </summary>
         /// <param name="cookieBase"></param>
-        public Cookie(IRawCookie cookieBase)
+        public Cookie(ICookieIngredients cookieBase)
         {
             ThrowIf.Parameter.IsNull(cookieBase, nameof(cookieBase));
             ThrowIf.Parameter.IsNull(cookieBase.OriginUri, nameof(cookieBase.OriginUri));
@@ -69,7 +69,7 @@ namespace DG.Common.Http.Cookies
 
         public bool IsValid(out string reason)
         {
-            foreach (var rule in CookieRule.StandardRules)
+            foreach (var rule in CookieRules.Default)
             {
                 if (!IsValidAccordingTo(rule))
                 {
@@ -83,7 +83,7 @@ namespace DG.Common.Http.Cookies
 
         public bool IsValidAccordingTo(CookieRule rule)
         {
-            return rule.CheckCookie(_base);
+            return rule.Check(_base);
         }
 
         /// <summary>
@@ -125,7 +125,7 @@ namespace DG.Common.Http.Cookies
         /// <returns></returns>
         public static bool TryParse(string headerValue, DateTimeOffset receievedDate, Uri originUri, out Cookie cookie)
         {
-            if (!RawHeaderCookie.TryParse(headerValue, receievedDate, originUri, out RawHeaderCookie rawCookie))
+            if (!SetCookieHeaderIngredients.TryParse(headerValue, receievedDate, originUri, out SetCookieHeaderIngredients rawCookie))
             {
                 cookie = null;
                 return false;

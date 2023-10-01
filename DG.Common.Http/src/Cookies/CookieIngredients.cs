@@ -3,7 +3,7 @@ using System;
 
 namespace DG.Common.Http.Cookies
 {
-    public class HandmadeCookie : IRawCookie
+    public class CookieIngredients : ICookieIngredients
     {
         private readonly string _name;
         private readonly string _value;
@@ -44,13 +44,13 @@ namespace DG.Common.Http.Cookies
         public int? MaxAge { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of <see cref="HandmadeCookie"/> with the given name, value, and creation data.
+        /// Initializes a new instance of <see cref="CookieIngredients"/> with the given name, value, and creation data.
         /// </summary>
         /// <param name="name">The name of this cookie.</param>
         /// <param name="value">The value of this cookie.</param>
         /// <param name="originUri">The URI of the response for which this cookie was set.</param>
         /// <param name="receivedDate">The date this cookie was originally received.</param>
-        public HandmadeCookie(string name, string value, Uri originUri, DateTimeOffset receivedDate)
+        public CookieIngredients(string name, string value, Uri originUri, DateTimeOffset receivedDate)
         {
             ThrowIf.Parameter.IsNullOrEmpty(name, nameof(name));
             ThrowIf.Parameter.IsNullOrEmpty(value, nameof(value));
@@ -64,12 +64,12 @@ namespace DG.Common.Http.Cookies
         }
 
         /// <summary>
-        /// Creates a copy of this instance of <see cref="HandmadeCookie"/>.
+        /// Creates a copy of this instance of <see cref="CookieIngredients"/>.
         /// </summary>
         /// <returns></returns>
-        public HandmadeCookie Copy()
+        public CookieIngredients Copy()
         {
-            return new HandmadeCookie(Name, Value, OriginUri, ReceivedDate)
+            return new CookieIngredients(Name, Value, OriginUri, ReceivedDate)
             {
                 Domain = Domain,
                 Path = Path,
@@ -81,9 +81,9 @@ namespace DG.Common.Http.Cookies
             };
         }
 
-        public static HandmadeCookie Copy(IRawCookie cookie)
+        public static CookieIngredients Copy(ICookieIngredients cookie)
         {
-            return new HandmadeCookie(cookie.Name, cookie.Value, cookie.OriginUri, cookie.ReceivedDate)
+            return new CookieIngredients(cookie.Name, cookie.Value, cookie.OriginUri, cookie.ReceivedDate)
             {
                 Domain = cookie.Domain,
                 Path = cookie.Path,

@@ -10,7 +10,7 @@ namespace DG.Common.Http.Cookies
 
         private readonly Lazy<string> _matchPath;
 
-        public CookiePath(IRawCookie cookieDough)
+        public CookiePath(ICookieIngredients cookieDough)
         {
             _originUri = cookieDough.OriginUri;
             _path = cookieDough.Path;

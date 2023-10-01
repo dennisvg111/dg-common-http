@@ -7,7 +7,7 @@ namespace DG.Common.Http.Cookies
     /// <summary>
     /// This class represents the read-only information from a Set-Cookie header, to be used in a <see cref="Cookie"/>.
     /// </summary>
-    internal class RawHeaderCookie : IRawCookie
+    internal class SetCookieHeaderIngredients : ICookieIngredients
     {
         private readonly string _name;
 
@@ -58,7 +58,7 @@ namespace DG.Common.Http.Cookies
         /// <inheritdoc/>
         public int? MaxAge => _maxAge;
 
-        private RawHeaderCookie(string name, string value, Uri originUri, DateTimeOffset receivedDate)
+        private SetCookieHeaderIngredients(string name, string value, Uri originUri, DateTimeOffset receivedDate)
         {
             _name = name;
             _value = value;
@@ -74,7 +74,7 @@ namespace DG.Common.Http.Cookies
         /// <param name="originUri"></param>
         /// <param name="cookie"></param>
         /// <returns></returns>
-        public static bool TryParse(string headerValue, DateTimeOffset receievedDate, Uri originUri, out RawHeaderCookie cookie)
+        public static bool TryParse(string headerValue, DateTimeOffset receievedDate, Uri originUri, out SetCookieHeaderIngredients cookie)
         {
             if (!headerValue.Contains("="))
             {
@@ -87,7 +87,7 @@ namespace DG.Common.Http.Cookies
                 cookie = null;
                 return false;
             }
-            cookie = new RawHeaderCookie(properties[0].Name, properties[0].Value, originUri, receievedDate);
+            cookie = new SetCookieHeaderIngredients(properties[0].Name, properties[0].Value, originUri, receievedDate);
 
             properties = properties.Skip(1).ToArray();
             cookie.ParseAdditionalProperties(properties);

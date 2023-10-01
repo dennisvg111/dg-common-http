@@ -41,6 +41,10 @@ namespace DG.Common.Http.Cookies
             }
         }
 
+        /// <summary>
+        /// Adds all relevant cookies from this <see cref="CookieJar"/> to the given request as cookie headers.
+        /// </summary>
+        /// <param name="request"></param>
         public void ApplyTo(HttpRequestMessage request)
         {
             var uri = request.RequestUri;

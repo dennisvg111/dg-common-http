@@ -1,5 +1,6 @@
 ﻿using DG.Common.Http.Exceptions;
-namespace DG.Common.Http.Authorization.OAuth
+
+namespace DG.Common.Http.Authorization
 {
     public class ExpiringAuthorizationHeaderProvider : IAuthorizationHeaderProvider
     {
@@ -37,6 +38,7 @@ namespace DG.Common.Http.Authorization.OAuth
             return true;
         }
 
+        /// <inheritdoc/>
         public string GetAuthorizationHeaderValue()
         {
             if (!CacheExpired)

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace DG.Common.Http.Authorization.OAuth
+namespace DG.Common.Http.Authorization
 {
     public class ExpiringAuthorization
     {
@@ -22,7 +22,7 @@ namespace DG.Common.Http.Authorization.OAuth
             _expires = expires;
         }
 
-        public static ExpiringAuthorization For(AuthorizationHeader authorizationHeader, DateTimeOffset expires)
+        public static ExpiringAuthorization With(AuthorizationHeader authorizationHeader, DateTimeOffset expires)
         {
             return new ExpiringAuthorization(authorizationHeader, expires);
         }

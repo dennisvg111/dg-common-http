@@ -12,7 +12,7 @@ namespace DG.Common.Http.Cookies
         /// </summary>
         public bool HasExpiration => _expirationDate.HasValue;
 
-        public CookieExpiration(IRawCookie cookieDough)
+        public CookieExpiration(ICookieIngredients cookieDough)
         {
             if (cookieDough.MaxAge.HasValue)
             {

@@ -2,7 +2,7 @@
 
 namespace DG.Common.Http.Cookies
 {
-    public class SerializedCookie : IRawCookie
+    public class SerializedCookie : ICookieIngredients
     {
         /// <inheritdoc/>
         public string Name { get; set; }
