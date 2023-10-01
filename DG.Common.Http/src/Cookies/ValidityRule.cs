@@ -6,7 +6,7 @@ using System.Linq.Expressions;
 
 namespace DG.Common.Http.Cookies
 {
-    public class CookieRule
+    public class ValidityRule
     {
         private readonly string _ruleName;
         private readonly Expression<Func<ICookieIngredients, bool>> _ruleApplicationCheck;
@@ -19,12 +19,12 @@ namespace DG.Common.Http.Cookies
         public string Name => _ruleName;
 
         /// <summary>
-        /// Initializes a new instance of <see cref="CookieRule"/> with the given <paramref name="ruleName"/>, <paramref name="ruleApplicationCheck"/> and <paramref name="rules"/>.
+        /// Initializes a new instance of <see cref="ValidityRule"/> with the given <paramref name="ruleName"/>, <paramref name="ruleApplicationCheck"/> and <paramref name="rules"/>.
         /// </summary>
         /// <param name="ruleName"></param>
         /// <param name="ruleApplicationCheck"></param>
         /// <param name="rules"></param>
-        public CookieRule(string ruleName, Expression<Func<ICookieIngredients, bool>> ruleApplicationCheck, List<Func<ICookieIngredients, bool>> rules)
+        public ValidityRule(string ruleName, Expression<Func<ICookieIngredients, bool>> ruleApplicationCheck, List<Func<ICookieIngredients, bool>> rules)
         {
             ThrowIf.Parameter.IsNullOrWhiteSpace(ruleName, nameof(ruleName));
             ThrowIf.Parameter.IsNull(rules, nameof(rules));
@@ -39,16 +39,16 @@ namespace DG.Common.Http.Cookies
         /// </summary>
         /// <param name="condition"></param>
         /// <returns></returns>
-        public CookieRule AndCheckIf(Func<ICookieIngredients, bool> condition)
+        public ValidityRule AndCheckIf(Func<ICookieIngredients, bool> condition)
         {
             ThrowIf.Parameter.IsNull(condition, nameof(condition));
             var rules = _rules.ToList();
             rules.Add(condition);
-            return new CookieRule(_ruleName, _ruleApplicationCheck, rules);
+            return new ValidityRule(_ruleName, _ruleApplicationCheck, rules);
         }
 
         /// <summary>
-        /// Initializes a new instance of <see cref="CookieRule"/> with the given rule name.
+        /// Initializes a new instance of <see cref="ValidityRule"/> with the given rule name.
         /// </summary>
         /// <param name="ruleName"></param>
         /// <returns></returns>
@@ -100,10 +100,10 @@ namespace DG.Common.Http.Cookies
             /// </summary>
             /// <param name="condition"></param>
             /// <returns></returns>
-            public CookieRule ApplyIf(Expression<Func<ICookieIngredients, bool>> condition)
+            public ValidityRule ApplyIf(Expression<Func<ICookieIngredients, bool>> condition)
             {
                 ThrowIf.Parameter.IsNull(condition, nameof(condition));
-                return new CookieRule(_ruleName, condition, new List<Func<ICookieIngredients, bool>>());
+                return new ValidityRule(_ruleName, condition, new List<Func<ICookieIngredients, bool>>());
             }
 
             /// <summary>
@@ -111,7 +111,7 @@ namespace DG.Common.Http.Cookies
             /// </summary>
             /// <param name="prefix"></param>
             /// <returns></returns>
-            public CookieRule ApplyIfCookieNameStartsWith(string prefix)
+            public ValidityRule ApplyIfCookieNameStartsWith(string prefix)
             {
                 ThrowIf.Parameter.IsNullOrEmpty(prefix, nameof(prefix));
                 return ApplyIf(c => c.Name.StartsWith(prefix, StringComparison.Ordinal));
@@ -121,7 +121,7 @@ namespace DG.Common.Http.Cookies
             /// Indicates this rule should be applied to all cookies.
             /// </summary>
             /// <returns></returns>
-            public CookieRule ApplyToAllCookies()
+            public ValidityRule ApplyToAllCookies()
             {
                 return ApplyIf(c => true);
             }

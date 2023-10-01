@@ -81,7 +81,7 @@ namespace DG.Common.Http.Cookies
             return true;
         }
 
-        public bool IsValidAccordingTo(CookieRule rule)
+        public bool IsValidAccordingTo(ValidityRule rule)
         {
             return rule.Check(_base);
         }
