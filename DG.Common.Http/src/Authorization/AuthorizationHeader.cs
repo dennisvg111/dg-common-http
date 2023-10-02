@@ -67,5 +67,37 @@ namespace DG.Common.Http.Authorization
         {
             return new AuthorizationHeader("Bearer", token);
         }
+
+        /// <summary>
+        /// Returns a new instance of <see cref="AuthorizationHeader"/> for a Netotiate/NTLM authorization header that has GSSAPI-data.
+        /// </summary>
+        /// <param name="gssapi"></param>
+        /// <returns></returns>
+        public static AuthorizationHeader ForNegotiate(string gssapi)
+        {
+            return new AuthorizationHeader("Negotiate", gssapi);
+        }
+
+        /// <summary>
+        /// Returns a new instance of <see cref="AuthorizationHeader"/> for an Amazon AWS4-HMAC-SHA256 authorization header that has a <paramref name="credential"/>, <paramref name="signedHeaders"/> and a <paramref name="signature"/>.
+        /// </summary>
+        /// <param name="credential">
+        ///     <para>Your access key ID and the scope information, which includes the date, region, and service that were used to calculate the signature.</para>
+        ///     <para>This mus be in the format <c><![CDATA[<your-access-key-id>/<date>/<aws-region>/<aws-service>/aws4_request]]></c>.</para>
+        /// </param>
+        /// <param name="signedHeaders">
+        ///     <para>A list of request headers that you used to compute the signature. The list includes header names only, and the header names must be in lowercase. </para>
+        ///     <para>For example: <c><![CDATA[host;range;x-amz-date]]></c>.</para>
+        /// </param>
+        /// <param name="signature">The 256-bit signature.</param>
+        /// <returns></returns>
+        public static AuthorizationHeader ForAws(string credential, string[] signedHeaders, byte[] signature)
+        {
+            string headerList = string.Join(";", signedHeaders);
+            string signatureHex = BitConverter.ToString(signature).Replace("-", "").ToLowerInvariant();
+
+            string headerValue = $"Credential={credential},SignedHeaders={headerList},Signature={signatureHex}";
+            return new AuthorizationHeader("AWS4-HMAC-SHA256", headerValue);
+        }
     }
 }
