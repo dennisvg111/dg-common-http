@@ -59,23 +59,23 @@ namespace DG.Common.Http.Authorization
         }
 
         /// <summary>
-        /// Returns a new instance of <see cref="AuthorizationHeader"/> for a bearer authorization header that has an access token.
+        /// Returns a new instance of <see cref="AuthorizationHeader"/> for a bearer authorization header that has an <paramref name="accessToken"/>.
         /// </summary>
-        /// <param name="token"></param>
+        /// <param name="accessToken">An OAuth 2.0 bearer access token</param>
         /// <returns></returns>
-        public static AuthorizationHeader ForBearer(string token)
+        public static AuthorizationHeader ForBearer(string accessToken)
         {
-            return new AuthorizationHeader("Bearer", token);
+            return new AuthorizationHeader("Bearer", accessToken);
         }
 
         /// <summary>
-        /// Returns a new instance of <see cref="AuthorizationHeader"/> for a Netotiate/NTLM authorization header that has GSSAPI-data.
+        /// Returns a new instance of <see cref="AuthorizationHeader"/> for a Netotiate/NTLM authorization header that has <paramref name="GssApiData"/>.
         /// </summary>
-        /// <param name="gssapi"></param>
+        /// <param name="GssApiData">GSSAPI data</param>
         /// <returns></returns>
-        public static AuthorizationHeader ForNegotiate(string gssapi)
+        public static AuthorizationHeader ForNegotiate(string GssApiData)
         {
-            return new AuthorizationHeader("Negotiate", gssapi);
+            return new AuthorizationHeader("Negotiate", GssApiData);
         }
 
         /// <summary>
