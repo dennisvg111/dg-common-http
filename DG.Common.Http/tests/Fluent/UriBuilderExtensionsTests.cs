@@ -1,9 +1,10 @@
-﻿using System;
+﻿using DG.Common.Http.Fluent;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 
-namespace DG.Common.Http.Tests
+namespace DG.Common.Http.Tests.Fluent
 {
     public class UriBuilderExtensionsTests
     {
@@ -92,17 +93,19 @@ namespace DG.Common.Http.Tests
         [Fact]
         public void WithQueryParts_Adds()
         {
-            UriBuilder builder = new UriBuilder("https://www.test.com/login.aspx?used=test");
+            string originalUri = "https://www.test.com/login.aspx?used=test";
+            UriBuilder builder = new UriBuilder(originalUri);
             var queryParts = new KeyValuePair<string, string>[]
             {
                 new KeyValuePair<string, string>("test", null),
                 new KeyValuePair<string, string>("test", "abc")
             };
 
-            builder.WithQueryParts(queryParts);
-            string uri = builder.Uri.ToString();
+            var clone = builder.WithQueryParts(queryParts);
+            string uri = clone.Uri.ToString();
 
             Assert.Equal("https://www.test.com/login.aspx?used=test&test&test=abc", uri);
+            Assert.Equal(originalUri, builder.Uri.ToString());
         }
     }
 }
