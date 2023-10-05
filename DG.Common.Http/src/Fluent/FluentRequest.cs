@@ -68,6 +68,11 @@ namespace DG.Common.Http.Fluent
             _authorizationProvider = authorization;
         }
 
+        public FluentRequest WithContent(HttpContent content)
+        {
+            return new FluentRequest(_method, _uri, content, _maxRedirects, _cookieJar, _authorizationProvider);
+        }
+
         public FluentRequest WithContent(FluentFormContent content)
         {
             return new FluentRequest(_method, _uri, content.Content, _maxRedirects, _cookieJar, _authorizationProvider);
@@ -158,6 +163,8 @@ namespace DG.Common.Http.Fluent
         /// <returns></returns>
         public FluentRequest RedirectForResponse(HttpResponseMessage response)
         {
+            //TODO: optionally set origin uri header
+
             var changeToGet = response.IsGetRedirect(_method);
             var method = changeToGet ? HttpMethod.Get : _method;
 
