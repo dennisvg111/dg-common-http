@@ -30,5 +30,18 @@ namespace DG.Common.Http.Fluent
 
             return response;
         }
+
+        /// <summary>
+        /// Send an HTTP request based on the given <see cref="FluentRequest"/> as an asynchronous operation, and deserializes the resulting JSON response content to the specified type.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="client"></param>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public static async Task<T> SendAndDeserializeAsync<T>(this HttpClient client, FluentRequest request)
+        {
+            var response = await client.SendAsync(request);
+            return await response.DeserializeResponseAsync<T>();
+        }
     }
 }
