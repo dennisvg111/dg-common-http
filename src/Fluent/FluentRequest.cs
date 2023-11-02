@@ -105,14 +105,36 @@ namespace DG.Common.Http.Fluent
             return new FluentRequest(_method, _uri, _content, _maxRedirects, cookieJar, _authorizationProvider);
         }
 
-        public FluentRequest WithAuthorizationHeader(string authorization)
+        /// <summary>
+        /// Returns a copy of this request with an <see cref="ConstantAuthorizationHeaderProvider"/> set based on <paramref name="headerValue"/>.
+        /// </summary>
+        /// <param name="headerValue"></param>
+        /// <returns></returns>
+        public FluentRequest WithAuthorizationHeader(string headerValue)
         {
-            return WithAuthorizationHeaderProvider(new ConstantAuthorizationHeaderProvider(authorization));
+            var headerProvider = new ConstantAuthorizationHeaderProvider(headerValue);
+            return WithAuthorizationHeaderProvider(headerProvider);
         }
 
-        public FluentRequest WithAuthorizationHeaderProvider(IAuthorizationHeaderProvider authorization)
+        /// <summary>
+        /// Returns a copy of this request with <paramref name="headerProvider"/> set to provide the <c>Authorization</c> header.
+        /// </summary>
+        /// <param name="headerProvider"></param>
+        /// <returns></returns>
+        public FluentRequest WithAuthorizationHeaderProvider(IAuthorizationHeaderProvider headerProvider)
         {
-            return new FluentRequest(_method, _uri, _content, _maxRedirects, _cookieJar, authorization);
+            return new FluentRequest(_method, _uri, _content, _maxRedirects, _cookieJar, headerProvider);
+        }
+
+        /// <summary>
+        /// Returns a copy of this request with an <see cref="ExpiringAuthorizationHeaderProvider"/> set based on <paramref name="authorizationProvider"/>.
+        /// </summary>
+        /// <param name="authorizationProvider"></param>
+        /// <returns></returns>
+        public FluentRequest WithAuthorizationHeaderProvider(IExpiringAuthorizationProvider authorizationProvider)
+        {
+            var headerProvider = new ExpiringAuthorizationHeaderProvider(authorizationProvider);
+            return WithAuthorizationHeaderProvider(headerProvider);
         }
 
         /// <summary>
