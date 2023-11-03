@@ -95,24 +95,6 @@ namespace DG.Common.Http.Fluent
             return copy;
         }
 
-        private FluentRequest(
-            HttpMethod method,
-            Uri uri,
-            HttpContent content,
-            int maxRedirects,
-            CookieJar cookieJar,
-            IAuthorizationHeaderProvider authorization,
-            CancellationToken cancellationToken,
-            HttpCompletionOption completionOption) : this(method, uri)
-        {
-            _content = content;
-            _maxRedirects = maxRedirects;
-            _cookieJar = cookieJar;
-            _authorizationProvider = authorization;
-            _cancellationToken = cancellationToken;
-            _completionOption = completionOption;
-        }
-
         public FluentRequest WithContent(HttpContent content)
         {
             var copy = Copy();
