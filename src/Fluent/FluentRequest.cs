@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using System;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 
 namespace DG.Common.Http.Fluent
 {
@@ -12,10 +13,14 @@ namespace DG.Common.Http.Fluent
     {
         private readonly HttpMethod _method;
         private readonly Uri _uri;
-        private readonly HttpContent _content;
-        private readonly int _maxRedirects = HttpClientSettings.DefaultAutomaticRedirectLimit;
-        private readonly CookieJar _cookieJar;
-        private readonly IAuthorizationHeaderProvider _authorizationProvider;
+
+        private HttpContent _content;
+        private int _maxRedirects = HttpClientSettings.DefaultAutomaticRedirectLimit;
+        private CookieJar _cookieJar;
+        private IAuthorizationHeaderProvider _authorizationProvider;
+
+        private CancellationToken _cancellationToken = CancellationToken.None;
+        private HttpCompletionOption _completionOption = HttpCompletionOption.ResponseContentRead;
 
         /// <summary>
         /// The maximum number of redirects that this request will follow automatically.
@@ -27,6 +32,19 @@ namespace DG.Common.Http.Fluent
         /// <para>Note that it is recommended to send a fluent request directly using <see cref="HttpClientExtensions.SendAsync(HttpClient, FluentRequest)"/>.</para>
         /// </summary>
         public HttpRequestMessage Message => MessageForBaseUri(null);
+
+        /// <summary>
+        /// <para>Indicates if control is returned to the program immediately after the headers are read, or when the entire response is cached.</para>
+        /// <para>Default is <see cref="HttpCompletionOption.ResponseContentRead"/>.</para>
+        /// <para>Note that when this is set to <see cref="HttpCompletionOption.ResponseHeadersRead"/>, extra care should be taken to ensure the response is disposed.</para>
+        /// </summary>
+        public HttpCompletionOption CompletionOption => _completionOption;
+
+        /// <summary>
+        /// <para>The cancellation token to cancel this request.</para>
+        /// <para>Default is <see cref="CancellationToken.None"/>.</para>
+        /// </summary>
+        public CancellationToken CancellationToken => _cancellationToken;
 
         /// <summary>
         /// <para>Gets a <see cref="HttpRequestMessage"/> instance constructed by this <see cref="FluentRequest"/>.</para>
@@ -60,22 +78,51 @@ namespace DG.Common.Http.Fluent
             _uri = uri;
         }
 
-        private FluentRequest(HttpMethod method, Uri uri, HttpContent content, int maxRedirects, CookieJar cookieJar, IAuthorizationHeaderProvider authorization) : this(method, uri)
+        private void CopyTo(FluentRequest copy)
+        {
+            copy._content = _content;
+            copy._maxRedirects = _maxRedirects;
+            copy._cookieJar = _cookieJar;
+            copy._authorizationProvider = _authorizationProvider;
+            copy._cancellationToken = _cancellationToken;
+            copy._completionOption = _completionOption;
+        }
+
+        private FluentRequest Copy()
+        {
+            var copy = new FluentRequest(_method, _uri);
+            CopyTo(copy);
+            return copy;
+        }
+
+        private FluentRequest(
+            HttpMethod method,
+            Uri uri,
+            HttpContent content,
+            int maxRedirects,
+            CookieJar cookieJar,
+            IAuthorizationHeaderProvider authorization,
+            CancellationToken cancellationToken,
+            HttpCompletionOption completionOption) : this(method, uri)
         {
             _content = content;
             _maxRedirects = maxRedirects;
             _cookieJar = cookieJar;
             _authorizationProvider = authorization;
+            _cancellationToken = cancellationToken;
+            _completionOption = completionOption;
         }
 
         public FluentRequest WithContent(HttpContent content)
         {
-            return new FluentRequest(_method, _uri, content, _maxRedirects, _cookieJar, _authorizationProvider);
+            var copy = Copy();
+            copy._content = content;
+            return copy;
         }
 
         public FluentRequest WithContent(FluentFormContent content)
         {
-            return new FluentRequest(_method, _uri, content.Content, _maxRedirects, _cookieJar, _authorizationProvider);
+            return WithContent(content.Content);
         }
 
         public FluentRequest WithSerializedJsonContent<T>(T content)
@@ -86,23 +133,28 @@ namespace DG.Common.Http.Fluent
 
         public FluentRequest WithJson(string json)
         {
-            var messageContent = new StringContent(json, Encoding.UTF8, "application/json");
-            return new FluentRequest(_method, _uri, messageContent, _maxRedirects, _cookieJar, _authorizationProvider);
+            var jsonContent = new StringContent(json, Encoding.UTF8, "application/json");
+
+            return WithContent(jsonContent);
         }
 
         public FluentRequest LimitAutomaticRedirectsTo(int maxRedirects)
         {
-            return new FluentRequest(_method, _uri, _content, maxRedirects, _cookieJar, _authorizationProvider);
+            var copy = Copy();
+            copy._maxRedirects = maxRedirects;
+            return copy;
         }
 
         public FluentRequest WithoutRedirects()
         {
-            return new FluentRequest(_method, _uri, _content, 0, _cookieJar, _authorizationProvider);
+            return LimitAutomaticRedirectsTo(0);
         }
 
         public FluentRequest WithCookieJar(CookieJar cookieJar)
         {
-            return new FluentRequest(_method, _uri, _content, _maxRedirects, cookieJar, _authorizationProvider);
+            var copy = Copy();
+            copy._cookieJar = cookieJar;
+            return copy;
         }
 
         /// <summary>
@@ -113,7 +165,7 @@ namespace DG.Common.Http.Fluent
         public FluentRequest WithAuthorizationHeader(string headerValue)
         {
             var headerProvider = new ConstantAuthorizationHeaderProvider(headerValue);
-            return WithAuthorizationHeaderProvider(headerProvider);
+            return WithAuthorizationHeader(headerProvider);
         }
 
         /// <summary>
@@ -121,9 +173,11 @@ namespace DG.Common.Http.Fluent
         /// </summary>
         /// <param name="headerProvider"></param>
         /// <returns></returns>
-        public FluentRequest WithAuthorizationHeaderProvider(IAuthorizationHeaderProvider headerProvider)
+        public FluentRequest WithAuthorizationHeader(IAuthorizationHeaderProvider headerProvider)
         {
-            return new FluentRequest(_method, _uri, _content, _maxRedirects, _cookieJar, headerProvider);
+            var copy = Copy();
+            copy._authorizationProvider = headerProvider;
+            return copy;
         }
 
         /// <summary>
@@ -131,10 +185,34 @@ namespace DG.Common.Http.Fluent
         /// </summary>
         /// <param name="authorizationProvider"></param>
         /// <returns></returns>
-        public FluentRequest WithAuthorizationHeaderProvider(IExpiringAuthorizationProvider authorizationProvider)
+        public FluentRequest WithAuthorizationHeader(IExpiringAuthorizationProvider authorizationProvider)
         {
             var headerProvider = new ExpiringAuthorizationHeaderProvider(authorizationProvider);
-            return WithAuthorizationHeaderProvider(headerProvider);
+            return WithAuthorizationHeader(headerProvider);
+        }
+
+        /// <summary>
+        /// Returns a copy of this request with <see cref="CompletionOption"/> set to the given option.
+        /// </summary>
+        /// <param name="option"></param>
+        /// <returns></returns>
+        public FluentRequest WithHttpCompletionOption(HttpCompletionOption option)
+        {
+            var copy = Copy();
+            copy._completionOption = option;
+            return copy;
+        }
+
+        /// <summary>
+        /// Returns a copy of this request with <see cref="CancellationToken"/> set to the given token.
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public FluentRequest WithCancellationToken(CancellationToken cancellationToken)
+        {
+            var copy = Copy();
+            copy._cancellationToken = cancellationToken;
+            return copy;
         }
 
         /// <summary>
@@ -193,9 +271,13 @@ namespace DG.Common.Http.Fluent
             var location = response.Headers.Location;
             var solvedLocationUri = response.RequestMessage.RequestUri.CombineForRedirectLocation(location);
 
-            var baseRedirect = new FluentRequest(method, solvedLocationUri, changeToGet ? null : _content, _maxRedirects - 1, _cookieJar, _authorizationProvider);
+            var redirectedRequest = new FluentRequest(method, solvedLocationUri);
+            CopyTo(redirectedRequest);
 
-            return baseRedirect;
+            redirectedRequest._content = changeToGet ? null : _content;
+            redirectedRequest._maxRedirects = _maxRedirects - 1;
+
+            return redirectedRequest;
         }
 
         internal void CollectCookiesIfNeeded(HttpResponseMessage response)

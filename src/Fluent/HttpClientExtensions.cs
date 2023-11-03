@@ -19,7 +19,7 @@ namespace DG.Common.Http.Fluent
         {
             var message = request.MessageForBaseUri(client.BaseAddress);
 
-            var response = await client.SendAsync(message);
+            var response = await client.SendAsync(message, request.CompletionOption, request.CancellationToken);
             request.CollectCookiesIfNeeded(response);
 
             if (response.IsRedirect() && request.MaxRedirects > 0)
@@ -40,8 +40,10 @@ namespace DG.Common.Http.Fluent
         /// <returns></returns>
         public static async Task<T> SendAndDeserializeAsync<T>(this HttpClient client, FluentRequest request)
         {
-            var response = await client.SendAsync(request);
-            return await response.DeserializeResponseAsync<T>();
+            using (var response = await client.SendAsync(request))
+            {
+                return await response.DeserializeResponseAsync<T>();
+            }
         }
     }
 }
