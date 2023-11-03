@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Headers;
+﻿using DG.Common.Http.Fluent;
+using System.Net.Http.Headers;
 
 namespace DG.Common.Http.Extensions
 {
@@ -11,6 +12,11 @@ namespace DG.Common.Http.Extensions
                 headers.Remove(name);
             }
             headers.Add(name, value);
+        }
+
+        public static void AddOrReplace(this HttpRequestHeaders headers, FluentHeader header)
+        {
+            headers.AddOrReplace(header.Name, header.Value);
         }
     }
 }
