@@ -18,7 +18,6 @@ namespace DG.Common.Http.Fluent
         private int _maxRedirects = HttpClientSettings.DefaultAutomaticRedirectLimit;
         private CookieJar _cookieJar;
         private IAuthorizationHeaderProvider _authorizationProvider;
-
         private CancellationToken _cancellationToken = CancellationToken.None;
         private HttpCompletionOption _completionOption = HttpCompletionOption.ResponseContentRead;
 
@@ -118,6 +117,21 @@ namespace DG.Common.Http.Fluent
             var jsonContent = new StringContent(json, Encoding.UTF8, "application/json");
 
             return WithContent(jsonContent);
+        }
+
+        /// <summary>
+        /// Returns a copy of this request with the content set to an instance of <see cref="ByteArrayContent"/>, with the given bytes (optionally limited to only <paramref name="maxAmount"/> bytes_.
+        /// </summary>
+        /// <param name="bytes"></param>
+        /// <param name="maxAmount"></param>
+        /// <returns></returns>
+        public FluentRequest WithByteArray(byte[] bytes, int? maxAmount = null)
+        {
+            var content = new ByteArrayContent(bytes, 0, maxAmount ?? bytes.Length);
+
+            var copy = Copy();
+            copy._content = content;
+            return copy;
         }
 
         public FluentRequest LimitAutomaticRedirectsTo(int maxRedirects)
