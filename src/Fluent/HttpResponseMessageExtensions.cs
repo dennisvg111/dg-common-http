@@ -10,7 +10,7 @@ namespace DG.Common.Http.Fluent
     public static class HttpResponseMessageExtensions
     {
         /// <summary>
-        /// Deserializes the JSON content of this response to the specified type.
+        /// Deserializes the JSON content of this response to the specified type <typeparamref name="T"/>.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="response"></param>
