@@ -8,6 +8,9 @@ using System.Text;
 
 namespace DG.Common.Http.Cookies
 {
+    /// <summary>
+    /// A container for cookies that provides functionality for collecting cookies from a <see cref="HttpResponseMessage"/>, and applying cookies to a <see cref="HttpRequestMessage"/>.
+    /// </summary>
     public class CookieJar
     {
         private readonly ConcurrentDictionary<string, Cookie> _cookies = new ConcurrentDictionary<string, Cookie>();

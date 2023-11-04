@@ -139,7 +139,7 @@ namespace DG.Common.Http.Fluent
         /// <returns></returns>
         public FluentRequest WithContent(FluentFormContent content)
         {
-            return WithContent(content.Content);
+            return WithContent(content.Build());
         }
 
         /// <summary>
