@@ -13,7 +13,7 @@ namespace DG.Common.Http.Cookies
         private readonly ConcurrentDictionary<string, Cookie> _cookies = new ConcurrentDictionary<string, Cookie>();
 
         /// <summary>
-        /// Updates the cookies contained in this <see cref="CookieJar"/> based on the given response.
+        /// Updates the cookies contained in this <see cref="CookieJar"/> based on the <c>Set-Cookie</c> header given response.
         /// </summary>
         /// <param name="response"></param>
         public void CollectFrom(HttpResponseMessage response)

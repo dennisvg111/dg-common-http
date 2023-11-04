@@ -17,6 +17,11 @@ namespace DG.Common.Http.Security
         private readonly SecurityProtocolType _oldSecurity;
         private readonly RemoteCertificateValidationCallback _oldCallback;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="SecurityProtocolContext"/> with the given accepted protocols, and validation state.
+        /// </summary>
+        /// <param name="acceptedProtocols"></param>
+        /// <param name="validationState"></param>
         public SecurityProtocolContext(SecurityProtocolType acceptedProtocols, CertificateValidationState validationState)
         {
             _oldSecurity = ServicePointManager.SecurityProtocol;
