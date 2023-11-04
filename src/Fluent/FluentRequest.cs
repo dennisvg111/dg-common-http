@@ -137,13 +137,13 @@ namespace DG.Common.Http.Fluent
         /// </summary>
         /// <param name="content"></param>
         /// <returns></returns>
-        public FluentRequest WithContent(FluentFormContent content)
+        public FluentRequest WithContent(FluentMultipartFormBuilder content)
         {
             return WithContent(content.Build());
         }
 
         /// <summary>
-        /// Returns a copy of this request with the HTTP body and content headers set based on the given <paramref name="content"/>.
+        /// Returns a copy of this request with the HTTP body and content headers set based on the JSON serialization of the given <paramref name="content"/>.
         /// </summary>
         /// <param name="content"></param>
         /// <returns></returns>
