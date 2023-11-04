@@ -123,13 +123,14 @@ namespace DG.Common.Http.Fluent
         }
 
         /// <summary>
-        /// Initializes a new instance of <see cref="FluentHeader"/> for a <c>Referer</c> header with the given referer uri.
+        /// <para>Initializes a new instance of <see cref="FluentHeader"/> for a <c>Referer</c> header with the given referer uri.</para>
+        /// <para>Note that the header name is Referer, not the correctly spelled Referrer.</para>
         /// </summary>
-        /// <param name="referer"></param>
+        /// <param name="referrer"></param>
         /// <returns></returns>
-        public static FluentHeader Referer(Uri referer)
+        public static FluentHeader Referrer(Uri referrer)
         {
-            return new FluentHeader("Referer", referer.ToString());
+            return new FluentHeader("Referer", referrer.ToString());
         }
 
         /// <summary>

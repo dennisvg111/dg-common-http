@@ -165,7 +165,7 @@ namespace DG.Common.Http.Fluent
         }
 
         /// <summary>
-        /// Returns a copy of this request with the content set to an instance of <see cref="ByteArrayContent"/>, with the given bytes (optionally limited to only <paramref name="maxAmount"/> bytes_.
+        /// Returns a copy of this request with the content set to an instance of <see cref="ByteArrayContent"/>, with the given bytes (optionally limited to only <paramref name="maxAmount"/> bytes.
         /// </summary>
         /// <param name="bytes"></param>
         /// <param name="maxAmount"></param>

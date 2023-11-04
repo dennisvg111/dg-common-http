@@ -1,4 +1,5 @@
 ﻿using DG.Common.Http.Fluent;
+using System;
 using Xunit;
 
 namespace DG.Common.Http.Tests.Fluent
@@ -16,6 +17,15 @@ namespace DG.Common.Http.Tests.Fluent
 
             Assert.Equal("Content-Range", header.Name);
             Assert.Equal(expected, header.Value);
+        }
+
+        [Fact]
+        public void Referrer_CorrectName()
+        {
+            //The official standard is misspelled, make sure we have the same spelling.
+            var header = FluentHeader.Referrer(new Uri("https://www.test.com"));
+
+            Assert.Equal("Referer", header.Name);
         }
 
         [Fact]
