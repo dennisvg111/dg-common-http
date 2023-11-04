@@ -17,6 +17,25 @@ namespace DG.Common.Http.Tests.Fluent
 
             Assert.Equal("Content-Range", header.Name);
             Assert.Equal(expected, header.Value);
+            Assert.True(header.IsContentHeader);
+        }
+
+        [Fact]
+        public void ContentLength_IsContentHeader()
+        {
+            var header = FluentHeader.ContentLength(1024);
+
+            Assert.Equal("Content-Length", header.Name);
+            Assert.True(header.IsContentHeader);
+        }
+
+        [Fact]
+        public void Authorization_IsNotContentHeader()
+        {
+            var header = FluentHeader.Authorization("Bearer 1234");
+
+            Assert.Equal("Authorization", header.Name);
+            Assert.False(header.IsContentHeader);
         }
 
         [Fact]
@@ -26,6 +45,7 @@ namespace DG.Common.Http.Tests.Fluent
             var header = FluentHeader.Referrer(new Uri("https://www.test.com"));
 
             Assert.Equal("Referer", header.Name);
+            Assert.False(header.IsContentHeader);
         }
 
         [Fact]
@@ -34,6 +54,7 @@ namespace DG.Common.Http.Tests.Fluent
             var header = new FluentHeader("any", "any");
 
             Assert.True(header.ShouldApply);
+            Assert.False(header.IsContentHeader);
         }
     }
 }

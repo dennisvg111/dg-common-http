@@ -75,6 +75,11 @@ namespace DG.Common.Http.Fluent
             }
             foreach (var header in _headers.Where(h => h.ShouldApply))
             {
+                if (header.IsContentHeader)
+                {
+                    message.Content.Headers.AddOrReplace(header);
+                    continue;
+                }
                 message.Headers.AddOrReplace(header);
             }
             return message;
