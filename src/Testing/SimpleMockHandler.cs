@@ -1,4 +1,5 @@
-﻿using System.Net.Http;
+﻿using System.Linq;
+using System.Net.Http;
 
 namespace DG.Common.Http.Testing
 {
@@ -13,7 +14,8 @@ namespace DG.Common.Http.Testing
         public HttpResponseMessage GetResponse(HttpRequestMessage request)
         {
             string content = request.Content?.ReadAsStringAsync().GetAwaiter().GetResult() ?? string.Empty;
-            var simpleRequest = new SimpleMockRequest(request.RequestUri.ToString(), request.Method, content);
+            var headers = request.Headers.Select(h => new SimpleMockHeader(h.Key, string.Join(";", h.Value))).ToArray();
+            var simpleRequest = new SimpleMockRequest(request.RequestUri.ToString(), request.Method, content, headers);
 
             var response = _request.GetResponse(simpleRequest);
 

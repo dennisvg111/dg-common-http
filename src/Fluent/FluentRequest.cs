@@ -1,14 +1,18 @@
-﻿using DG.Common.Http.Authorization;
-using DG.Common.Http.Cookies;
+﻿using DG.Common.Http.Cookies;
 using DG.Common.Http.Extensions;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
 
 namespace DG.Common.Http.Fluent
 {
+    /// <summary>
+    /// Represents a request with methods that allow for chaining calls.
+    /// </summary>
     public class FluentRequest
     {
         private readonly HttpMethod _method;
@@ -17,9 +21,9 @@ namespace DG.Common.Http.Fluent
         private HttpContent _content;
         private int _maxRedirects = HttpClientSettings.DefaultAutomaticRedirectLimit;
         private CookieJar _cookieJar;
-        private IAuthorizationHeaderProvider _authorizationProvider;
         private CancellationToken _cancellationToken = CancellationToken.None;
         private HttpCompletionOption _completionOption = HttpCompletionOption.ResponseContentRead;
+        private List<FluentHeader> _headers = new List<FluentHeader>();
 
         /// <summary>
         /// The maximum number of redirects that this request will follow automatically.
@@ -46,6 +50,11 @@ namespace DG.Common.Http.Fluent
         public CancellationToken CancellationToken => _cancellationToken;
 
         /// <summary>
+        /// A collection of headers that will be applied to this request.
+        /// </summary>
+        public IReadOnlyList<FluentHeader> Headers => _headers;
+
+        /// <summary>
         /// <para>Gets a <see cref="HttpRequestMessage"/> instance constructed by this <see cref="FluentRequest"/>.</para>
         /// <para>Note that it is recommended to send a fluent request directly using <see cref="HttpClientExtensions.SendAsync(HttpClient, FluentRequest)"/>.</para>
         /// </summary>
@@ -64,13 +73,18 @@ namespace DG.Common.Http.Fluent
             {
                 _cookieJar.ApplyTo(message);
             }
-            if (_authorizationProvider != null && _authorizationProvider.IsAuthorized)
+            foreach (var header in _headers.Where(h => h.ShouldApply))
             {
-                _authorizationProvider.TryDecorateMessage(message);
+                message.Headers.AddOrReplace(header);
             }
             return message;
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="FluentRequest"/> with the given <see cref="HttpMethod"/> and <see cref="Uri"/>.
+        /// </summary>
+        /// <param name="method"></param>
+        /// <param name="uri"></param>
         internal FluentRequest(HttpMethod method, Uri uri)
         {
             _method = method;
@@ -82,9 +96,9 @@ namespace DG.Common.Http.Fluent
             copy._content = _content;
             copy._maxRedirects = _maxRedirects;
             copy._cookieJar = _cookieJar;
-            copy._authorizationProvider = _authorizationProvider;
             copy._cancellationToken = _cancellationToken;
             copy._completionOption = _completionOption;
+            copy._headers = new List<FluentHeader>(_headers);
         }
 
         private FluentRequest Copy()
@@ -94,6 +108,23 @@ namespace DG.Common.Http.Fluent
             return copy;
         }
 
+        /// <summary>
+        /// Returns a copy of this request with the given <paramref name="header"/> added to the collection of headers.
+        /// </summary>
+        /// <param name="header"></param>
+        /// <returns></returns>
+        public FluentRequest WithHeader(FluentHeader header)
+        {
+            var copy = Copy();
+            copy._headers.Add(header);
+            return copy;
+        }
+
+        /// <summary>
+        /// Returns a copy of this request with the HTTP body and content headers set to the given <paramref name="content"/>.
+        /// </summary>
+        /// <param name="content"></param>
+        /// <returns></returns>
         public FluentRequest WithContent(HttpContent content)
         {
             var copy = Copy();
@@ -101,21 +132,35 @@ namespace DG.Common.Http.Fluent
             return copy;
         }
 
-        public FluentRequest WithContent(FluentFormContent content)
+        /// <summary>
+        /// Returns a copy of this request with the HTTP body and content headers set based on the given <paramref name="content"/>.
+        /// </summary>
+        /// <param name="content"></param>
+        /// <returns></returns>
+        public FluentRequest WithContent(FluentMultipartFormBuilder content)
         {
-            return WithContent(content.Content);
+            return WithContent(content.Build());
         }
 
+        /// <summary>
+        /// Returns a copy of this request with the HTTP body and content headers set based on the JSON serialization of the given <paramref name="content"/>.
+        /// </summary>
+        /// <param name="content"></param>
+        /// <returns></returns>
         public FluentRequest WithSerializedJsonContent<T>(T content)
         {
             var json = JsonConvert.SerializeObject(content);
             return WithJson(json);
         }
 
+        /// <summary>
+        /// Returns a copy of this request with the HTTP body and content headers set based on the given <paramref name="json"/> content.
+        /// </summary>
+        /// <param name="json"></param>
+        /// <returns></returns>
         public FluentRequest WithJson(string json)
         {
             var jsonContent = new StringContent(json, Encoding.UTF8, "application/json");
-
             return WithContent(jsonContent);
         }
 
@@ -134,6 +179,11 @@ namespace DG.Common.Http.Fluent
             return copy;
         }
 
+        /// <summary>
+        /// Returns a copy of this request with the remaining allowed redirects set to <paramref name="maxRedirects"/>.
+        /// </summary>
+        /// <param name="maxRedirects"></param>
+        /// <returns></returns>
         public FluentRequest LimitAutomaticRedirectsTo(int maxRedirects)
         {
             var copy = Copy();
@@ -141,50 +191,26 @@ namespace DG.Common.Http.Fluent
             return copy;
         }
 
+        /// <summary>
+        /// Returns a copy of this request that will not be automatically redirected.
+        /// </summary>
+        /// <returns></returns>
         public FluentRequest WithoutRedirects()
         {
             return LimitAutomaticRedirectsTo(0);
         }
 
+        /// <summary>
+        /// <para>Returns a copy of this request with the cookie jar set to the given <paramref name="cookieJar"/>.</para>
+        /// <para>This means that any applicable cookies in this jar will be applied to this request, and any new cookies in the response will be saved to this jar.</para>
+        /// </summary>
+        /// <param name="cookieJar"></param>
+        /// <returns></returns>
         public FluentRequest WithCookieJar(CookieJar cookieJar)
         {
             var copy = Copy();
             copy._cookieJar = cookieJar;
             return copy;
-        }
-
-        /// <summary>
-        /// Returns a copy of this request with an <see cref="ConstantAuthorizationHeaderProvider"/> set based on <paramref name="headerValue"/>.
-        /// </summary>
-        /// <param name="headerValue"></param>
-        /// <returns></returns>
-        public FluentRequest WithAuthorizationHeader(string headerValue)
-        {
-            var headerProvider = new ConstantAuthorizationHeaderProvider(headerValue);
-            return WithAuthorizationHeader(headerProvider);
-        }
-
-        /// <summary>
-        /// Returns a copy of this request with <paramref name="headerProvider"/> set to provide the <c>Authorization</c> header.
-        /// </summary>
-        /// <param name="headerProvider"></param>
-        /// <returns></returns>
-        public FluentRequest WithAuthorizationHeader(IAuthorizationHeaderProvider headerProvider)
-        {
-            var copy = Copy();
-            copy._authorizationProvider = headerProvider;
-            return copy;
-        }
-
-        /// <summary>
-        /// Returns a copy of this request with an <see cref="ExpiringAuthorizationHeaderProvider"/> set based on <paramref name="authorizationProvider"/>.
-        /// </summary>
-        /// <param name="authorizationProvider"></param>
-        /// <returns></returns>
-        public FluentRequest WithAuthorizationHeader(IExpiringAuthorizationProvider authorizationProvider)
-        {
-            var headerProvider = new ExpiringAuthorizationHeaderProvider(authorizationProvider);
-            return WithAuthorizationHeader(headerProvider);
         }
 
         /// <summary>

@@ -1,4 +1,6 @@
-﻿using System.Net.Http;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
 
 namespace DG.Common.Http.Testing
 {
@@ -10,6 +12,7 @@ namespace DG.Common.Http.Testing
         private readonly string _url;
         private readonly HttpMethod _method = HttpMethod.Get;
         private readonly string _content = string.Empty;
+        private readonly Dictionary<string, SimpleMockHeader> _headers = new Dictionary<string, SimpleMockHeader>();
 
         /// <summary>
         /// The url for this request.
@@ -26,11 +29,17 @@ namespace DG.Common.Http.Testing
         /// </summary>
         public string Content => _content;
 
-        internal SimpleMockRequest(string url, HttpMethod method, string content)
+        /// <summary>
+        /// The headers for this request.
+        /// </summary>
+        public IReadOnlyDictionary<string, SimpleMockHeader> Headers => _headers;
+
+        internal SimpleMockRequest(string url, HttpMethod method, string content, IEnumerable<SimpleMockHeader> headers)
         {
             _url = url;
             _method = method;
             _content = content;
+            _headers = headers.ToDictionary(h => h.Name, h => h);
         }
     }
 }

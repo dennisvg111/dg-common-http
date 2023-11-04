@@ -17,5 +17,13 @@ namespace DG.Common.Http.Tests.Fluent
             Assert.Equal("Content-Range", header.Name);
             Assert.Equal(expected, header.Value);
         }
+
+        [Fact]
+        public void DefaultConstructor_ShouldAlwaysApply()
+        {
+            var header = new FluentHeader("any", "any");
+
+            Assert.True(header.ShouldApply);
+        }
     }
 }
