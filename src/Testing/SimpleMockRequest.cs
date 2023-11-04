@@ -13,6 +13,7 @@ namespace DG.Common.Http.Testing
         private readonly HttpMethod _method = HttpMethod.Get;
         private readonly string _content = string.Empty;
         private readonly Dictionary<string, SimpleMockHeader> _headers = new Dictionary<string, SimpleMockHeader>();
+        private readonly Dictionary<string, SimpleMockHeader> _contentHeaders = new Dictionary<string, SimpleMockHeader>();
 
         /// <summary>
         /// The url for this request.
@@ -34,12 +35,18 @@ namespace DG.Common.Http.Testing
         /// </summary>
         public IReadOnlyDictionary<string, SimpleMockHeader> Headers => _headers;
 
-        internal SimpleMockRequest(string url, HttpMethod method, string content, IEnumerable<SimpleMockHeader> headers)
+        /// <summary>
+        /// The headers for the content of this request.
+        /// </summary>
+        public IReadOnlyDictionary<string, SimpleMockHeader> ContentHeaders => _contentHeaders;
+
+        internal SimpleMockRequest(string url, HttpMethod method, string content, IEnumerable<SimpleMockHeader> headers, IEnumerable<SimpleMockHeader> contentHeaders)
         {
             _url = url;
             _method = method;
             _content = content;
             _headers = headers.ToDictionary(h => h.Name, h => h);
+            _contentHeaders = contentHeaders.ToDictionary(h => h.Name, h => h);
         }
     }
 }

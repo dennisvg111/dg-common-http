@@ -6,7 +6,7 @@ namespace DG.Common.Http.Fluent
     /// <summary>
     /// Provides a way to build a <see cref="MultipartFormDataContent"/> using methods that can be chained.
     /// </summary>
-    public class FluentMultipartFormBuilder
+    public class FluentFormContentBuilder
     {
         private readonly List<KeyValuePair<string, HttpContent>> _content;
 
@@ -22,10 +22,10 @@ namespace DG.Common.Http.Fluent
         }
 
         /// <summary>
-        /// Initializes a new instance of <see cref="FluentMultipartFormBuilder"/> with the given content list.
+        /// Initializes a new instance of <see cref="FluentFormContentBuilder"/> with the given content list.
         /// </summary>
         /// <param name="content"></param>
-        public FluentMultipartFormBuilder(List<KeyValuePair<string, HttpContent>> content)
+        public FluentFormContentBuilder(List<KeyValuePair<string, HttpContent>> content)
         {
             _content = content;
         }
@@ -36,11 +36,11 @@ namespace DG.Common.Http.Fluent
         /// <param name="name"></param>
         /// <param name="content"></param>
         /// <returns></returns>
-        public FluentMultipartFormBuilder AndWith(string name, HttpContent content)
+        public FluentFormContentBuilder AndWith(string name, HttpContent content)
         {
             var combinedContent = new List<KeyValuePair<string, HttpContent>>(_content);
             combinedContent.Add(new KeyValuePair<string, HttpContent>(name, content));
-            return new FluentMultipartFormBuilder(combinedContent);
+            return new FluentFormContentBuilder(combinedContent);
         }
 
         /// <summary>
@@ -49,34 +49,34 @@ namespace DG.Common.Http.Fluent
         /// <param name="name"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public FluentMultipartFormBuilder AndWith(string name, string value)
+        public FluentFormContentBuilder AndWith(string name, string value)
         {
             var content = new StringContent(value);
             return AndWith(name, content);
         }
 
         /// <summary>
-        /// Returns a new instance of <see cref="FluentMultipartFormBuilder"/> with the given <paramref name="content"/> added, using the specified name.
+        /// Returns a new instance of <see cref="FluentFormContentBuilder"/> with the given <paramref name="content"/> added, using the specified name.
         /// </summary>
         /// <param name="name"></param>
         /// <param name="content"></param>
         /// <returns></returns>
-        public static FluentMultipartFormBuilder With(string name, HttpContent content)
+        public static FluentFormContentBuilder With(string name, HttpContent content)
         {
             var combinedContent = new List<KeyValuePair<string, HttpContent>>()
             {
                 new KeyValuePair<string, HttpContent>(name, content)
             };
-            return new FluentMultipartFormBuilder(combinedContent);
+            return new FluentFormContentBuilder(combinedContent);
         }
 
         /// <summary>
-        /// Returns a new instance of <see cref="FluentMultipartFormBuilder"/> with the given <paramref name="value"/> added as <see cref="StringContent"/>, using the specified name.
+        /// Returns a new instance of <see cref="FluentFormContentBuilder"/> with the given <paramref name="value"/> added as <see cref="StringContent"/>, using the specified name.
         /// </summary>
         /// <param name="name"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public static FluentMultipartFormBuilder With(string name, string value)
+        public static FluentFormContentBuilder With(string name, string value)
         {
             var content = new StringContent(value);
             return With(name, content);

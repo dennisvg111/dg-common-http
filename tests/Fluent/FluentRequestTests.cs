@@ -49,5 +49,24 @@ namespace DG.Common.Http.Tests.Fluent
             Assert.Equal(HttpStatusCode.BadRequest, responseWithoutHeader.StatusCode);
             Assert.Equal(HttpStatusCode.OK, responseWithHeader.StatusCode);
         }
+
+        [Fact]
+        public async Task WithContentHeader_AppliesHeader()
+        {
+            var mockedHandler = Substitute.For<ISimpleMockHandler>();
+            mockedHandler.GetResponse(Arg.Any<SimpleMockRequest>()).Returns(SimpleMockResponse.BadRequest());
+            mockedHandler.GetResponse(Arg.Is<SimpleMockRequest>(m => m.ContentHeaders.ContainsKey("Content-Length") && !m.Headers.ContainsKey("Content-Length"))).Returns(SimpleMockResponse.Ok());
+            var client = mockedHandler.CreateNewClient();
+            var requestWithoutHeader = FluentRequest.Post.To("https://www.test.com");
+            var requestWithHeader = FluentRequest.Post.To("https://www.test.com")
+                .WithContent(FluentFormContentBuilder.With("username", "test"))
+                .WithHeader(FluentHeader.ContentLength(500));
+
+            var responseWithoutHeader = await client.SendAsync(requestWithoutHeader);
+            var responseWithHeader = await client.SendAsync(requestWithHeader);
+
+            Assert.Equal(HttpStatusCode.BadRequest, responseWithoutHeader.StatusCode);
+            Assert.Equal(HttpStatusCode.OK, responseWithHeader.StatusCode);
+        }
     }
 }

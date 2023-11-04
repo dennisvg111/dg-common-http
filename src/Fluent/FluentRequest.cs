@@ -77,7 +77,7 @@ namespace DG.Common.Http.Fluent
             {
                 if (header.IsContentHeader)
                 {
-                    message.Content.Headers.AddOrReplace(header);
+                    message.Content?.Headers?.AddOrReplace(header);
                     continue;
                 }
                 message.Headers.AddOrReplace(header);
@@ -142,7 +142,7 @@ namespace DG.Common.Http.Fluent
         /// </summary>
         /// <param name="content"></param>
         /// <returns></returns>
-        public FluentRequest WithContent(FluentMultipartFormBuilder content)
+        public FluentRequest WithContent(FluentFormContentBuilder content)
         {
             return WithContent(content.Build());
         }
