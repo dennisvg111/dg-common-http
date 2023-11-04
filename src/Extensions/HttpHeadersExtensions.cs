@@ -3,9 +3,9 @@ using System.Net.Http.Headers;
 
 namespace DG.Common.Http.Extensions
 {
-    public static class HttpRequestHeadersExtensions
+    public static class HttpHeadersExtensions
     {
-        public static void AddOrReplace(this HttpRequestHeaders headers, string name, string value)
+        public static void AddOrReplace(this HttpHeaders headers, string name, string value)
         {
             if (headers.Contains(name))
             {
@@ -14,7 +14,7 @@ namespace DG.Common.Http.Extensions
             headers.Add(name, value);
         }
 
-        public static void AddOrReplace(this HttpRequestHeaders headers, FluentHeader header)
+        public static void AddOrReplace(this HttpHeaders headers, FluentHeader header)
         {
             headers.AddOrReplace(header.Name, header.Value);
         }

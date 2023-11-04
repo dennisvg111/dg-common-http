@@ -1,5 +1,6 @@
 ﻿using DG.Common.Http.Authorization;
 using System;
+using System.Net.Http;
 
 namespace DG.Common.Http.Fluent
 {
@@ -10,6 +11,7 @@ namespace DG.Common.Http.Fluent
     {
         private readonly string _name;
         private readonly Func<string> _value;
+        private readonly bool _isContentHeader;
         private readonly Func<bool> _apply;
 
         /// <summary>
@@ -23,30 +25,33 @@ namespace DG.Common.Http.Fluent
         public string Value => _value();
 
         /// <summary>
-        /// <para>Indicates if this header should be applied to a request. For headers initialized using <see cref="FluentHeader.FluentHeader(string, string)"/> this always returns <see langword="true"/>.</para>
+        /// <para>Indicates if this header is a content header, when used for a request.</para>
+        /// <para>Content headers get set to <see cref="HttpContent.Headers"/> instead of <see cref="HttpRequestMessage.Headers"/>.</para>
+        /// </summary>
+        public bool IsContentHeader => _isContentHeader;
+
+        /// <summary>
+        /// <para>Indicates if this header should be applied to a request. For headers initialized using <see cref="FluentHeader.FluentHeader(string, string, bool)"/> this always returns <see langword="true"/>.</para>
         /// <para>This is used with some special headers like <c>Authorization</c> headers where <see cref="IAuthorizationHeaderProvider.IsAuthorized"/> is <see langword="false"/>.</para>
         /// </summary>
         public bool ShouldApply => _apply();
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="FluentHeader"/> with the given <paramref name="name"/> and <paramref name="value"/>.
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="value"></param>
-        /// <param name="apply"></param>
-        private FluentHeader(string name, Func<string> value, Func<bool> apply)
+        private FluentHeader(string name, Func<string> value, bool isContentHeader, Func<bool> apply)
         {
             _name = name;
             _value = value;
+            _isContentHeader = isContentHeader;
             _apply = apply;
         }
 
         /// <summary>
-        /// Initializes a new instance of <see cref="FluentHeader"/> with the given <paramref name="name"/> and <paramref name="value"/>.
+        /// Initializes a new instance of <see cref="FluentHeader"/> with the given <paramref name="name"/> and <paramref name="value"/>, and optionally a value indicating if this header is a content header.
         /// </summary>
         /// <param name="name"></param>
         /// <param name="value"></param>
-        public FluentHeader(string name, string value) : this(name, () => value, () => true) { }
+        /// <param name="isContentHeader"></param>
+        public FluentHeader(string name, string value, bool isContentHeader = false)
+            : this(name, () => value, isContentHeader, () => true) { }
 
         /// <summary>
         /// Initializes a new instance of <see cref="FluentHeader"/> for an <c>Authorization</c> header with the given header provider.
@@ -55,7 +60,7 @@ namespace DG.Common.Http.Fluent
         /// <returns></returns>
         public static FluentHeader Authorization(IAuthorizationHeaderProvider authorizationHeaderProvider)
         {
-            return new FluentHeader("Authorization", () => authorizationHeaderProvider.GetAuthorizationHeaderValue(), () => authorizationHeaderProvider.IsAuthorized);
+            return new FluentHeader("Authorization", () => authorizationHeaderProvider.GetAuthorizationHeaderValue(), false, () => authorizationHeaderProvider.IsAuthorized);
         }
 
         /// <summary>
@@ -96,7 +101,7 @@ namespace DG.Common.Http.Fluent
         /// <returns></returns>
         public static FluentHeader ContentLength(long bytes)
         {
-            return new FluentHeader("Content-Length", bytes.ToString());
+            return new FluentHeader("Content-Length", bytes.ToString(), true);
         }
 
         /// <summary>
@@ -119,7 +124,7 @@ namespace DG.Common.Http.Fluent
             {
                 total = "bytes */" + total;
             }
-            return new FluentHeader("Content-Range", total);
+            return new FluentHeader("Content-Range", total, true);
         }
 
         /// <summary>
