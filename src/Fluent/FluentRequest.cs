@@ -150,7 +150,7 @@ namespace DG.Common.Http.Fluent
         public FluentRequest WithSerializedJsonContent<T>(T content)
         {
             var json = JsonConvert.SerializeObject(content);
-            return WithJson(json);
+            return WithJsonContent(json);
         }
 
         /// <summary>
@@ -158,7 +158,7 @@ namespace DG.Common.Http.Fluent
         /// </summary>
         /// <param name="json"></param>
         /// <returns></returns>
-        public FluentRequest WithJson(string json)
+        public FluentRequest WithJsonContent(string json)
         {
             var jsonContent = new StringContent(json, Encoding.UTF8, "application/json");
             return WithContent(jsonContent);
@@ -170,7 +170,7 @@ namespace DG.Common.Http.Fluent
         /// <param name="bytes"></param>
         /// <param name="maxAmount"></param>
         /// <returns></returns>
-        public FluentRequest WithByteArray(byte[] bytes, int? maxAmount = null)
+        public FluentRequest WithByteArrayContent(byte[] bytes, int? maxAmount = null)
         {
             var content = new ByteArrayContent(bytes, 0, maxAmount ?? bytes.Length);
 
