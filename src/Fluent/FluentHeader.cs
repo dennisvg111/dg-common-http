@@ -94,7 +94,7 @@ namespace DG.Common.Http.Fluent
         /// </summary>
         /// <param name="bytes"></param>
         /// <returns></returns>
-        public static FluentHeader ContentLength(int bytes)
+        public static FluentHeader ContentLength(long bytes)
         {
             return new FluentHeader("Content-Length", bytes.ToString());
         }
@@ -106,19 +106,20 @@ namespace DG.Common.Http.Fluent
         /// <param name="bytes"></param>
         /// <param name="totalBytes"></param>
         /// <returns></returns>
-        public static FluentHeader ContentRange(int startIndex, int? bytes, int? totalBytes)
+        public static FluentHeader ContentRange(long startIndex, long? bytes, long? totalBytes)
         {
-            string headerValue = "/" + (totalBytes.HasValue ? totalBytes.Value.ToString() : "*");
+            string total = totalBytes.HasValue ? totalBytes.Value.ToString() : "*";
 
             if (bytes.HasValue)
             {
-                headerValue = $"bytes {startIndex}-{(startIndex + bytes.Value - 1)}{headerValue}";
+                var endIndex = startIndex + bytes.Value - 1;
+                total = $"bytes {startIndex}-{endIndex}/{total}";
             }
             else
             {
-                headerValue = "bytes *" + headerValue;
+                total = "bytes */" + total;
             }
-            return new FluentHeader("Content-Range", headerValue);
+            return new FluentHeader("Content-Range", total);
         }
 
         /// <summary>
