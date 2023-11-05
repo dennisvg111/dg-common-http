@@ -1,6 +1,7 @@
 ﻿using DG.Common.Http.Fluent;
 using DG.Common.Http.Testing;
 using NSubstitute;
+using System;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -10,6 +11,25 @@ namespace DG.Common.Http.Tests.Fluent
 {
     public class FluentRequestTests
     {
+        [Theory]
+        [InlineData("https://www.test.com/api/v1.0/", "users", "https://www.test.com/api/v1.0/users")]
+        [InlineData("https://www.test.com/api/v1.0", "users", "https://www.test.com/api/users")]
+        [InlineData("https://www.test.com/api/v1.0/", "/users", "https://www.test.com/users")]
+        [InlineData("https://www.test.com/api/v1.0", "/users", "https://www.test.com/users")]
+        public void WithBaseAddress_Combines(string baseAddress, string requestUri, string expected)
+        {
+            Uri baseUri = null;
+            if (!string.IsNullOrEmpty(baseAddress))
+            {
+                baseUri = new Uri(baseAddress);
+            }
+            var request = FluentRequest.Get.To(requestUri);
+
+            var message = request.MessageForBaseUri(baseUri);
+
+            Assert.Equal(expected, message.RequestUri.ToString());
+        }
+
         [Fact]
         public void WithHeader_AddsToList()
         {
