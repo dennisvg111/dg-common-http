@@ -54,6 +54,17 @@ namespace DG.Common.Http.Fluent
             : this(name, () => value, isContentHeader, () => true) { }
 
         /// <summary>
+        /// <para>Starts the initialization of a <see cref="FluentHeader"/> for a header with the given name.</para>
+        /// <para>Note this should be followed by calling <see cref="FluentHeaderName.AndValue(string)"/> on the result.</para>
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public static FluentHeaderName WithName(string name)
+        {
+            return new FluentHeaderName(name);
+        }
+
+        /// <summary>
         /// Initializes a new instance of <see cref="FluentHeader"/> for an <c>Authorization</c> header with the given header provider.
         /// </summary>
         /// <param name="authorizationHeaderProvider"></param>
@@ -145,6 +156,29 @@ namespace DG.Common.Http.Fluent
         public override string ToString()
         {
             return $"{Name}: {Value}";
+        }
+
+        /// <summary>
+        /// This class is only used to build a <see cref="FluentHeader"/> using <see cref="FluentHeader.WithName(string)"/>, and should not be used directly.
+        /// </summary>
+        public class FluentHeaderName
+        {
+            private readonly string _name;
+
+            internal FluentHeaderName(string name)
+            {
+                _name = name;
+            }
+
+            /// <summary>
+            /// Initializes a new instance of <see cref="FluentHeader"/> for a header with the previously specified name and the given <paramref name="value"/>.
+            /// </summary>
+            /// <param name="value"></param>
+            /// <returns></returns>
+            public FluentHeader AndValue(string value)
+            {
+                return new FluentHeader(_name, value);
+            }
         }
     }
 }

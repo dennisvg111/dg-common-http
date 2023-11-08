@@ -25,7 +25,7 @@ namespace DG.Common.Http.Testing
         /// <returns>Returns <see cref="Task{TResult}"/>. The task object representing the asynchronous operation.</returns>
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            return await Task.Run(() => _handler.GetResponse(request));
+            return await Task.Run(() => _handler.GetResponse(request)).ConfigureAwait(false);
         }
     }
 }
