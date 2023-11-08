@@ -17,7 +17,7 @@ namespace DG.Common.Http.Fluent
         /// <returns></returns>
         public static async Task<T> DeserializeResponseAsync<T>(this HttpResponseMessage response)
         {
-            var result = await response.Content.ReadAsStringAsync();
+            var result = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
             return JsonConvert.DeserializeObject<T>(result);
         }

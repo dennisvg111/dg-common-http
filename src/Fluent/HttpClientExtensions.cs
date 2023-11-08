@@ -19,13 +19,13 @@ namespace DG.Common.Http.Fluent
         {
             var message = request.MessageForBaseUri(client.BaseAddress);
 
-            var response = await client.SendAsync(message, request.CompletionOption, request.CancellationToken);
+            var response = await client.SendAsync(message, request.CompletionOption, request.CancellationToken).ConfigureAwait(false);
             request.CollectCookiesIfNeeded(response);
 
             if (response.IsRedirect() && request.MaxRedirects > 0)
             {
                 var redirect = request.RedirectForResponse(response);
-                return await SendAsync(client, redirect);
+                return await SendAsync(client, redirect).ConfigureAwait(false);
             }
 
             return response;
@@ -40,9 +40,9 @@ namespace DG.Common.Http.Fluent
         /// <returns></returns>
         public static async Task<T> SendAndDeserializeAsync<T>(this HttpClient client, FluentRequest request)
         {
-            using (var response = await client.SendAsync(request))
+            using (var response = await client.SendAsync(request).ConfigureAwait(false))
             {
-                return await response.DeserializeResponseAsync<T>();
+                return await response.DeserializeResponseAsync<T>().ConfigureAwait(false);
             }
         }
     }
