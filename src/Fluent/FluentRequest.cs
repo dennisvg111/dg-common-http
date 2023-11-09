@@ -67,8 +67,10 @@ namespace DG.Common.Http.Fluent
             {
                 requestUri = new Uri(baseUri, _uri);
             }
-            var message = new HttpRequestMessage(_method, requestUri);
-            message.Content = _content;
+            var message = new HttpRequestMessage(_method, requestUri)
+            {
+                Content = _content
+            };
             if (_cookieJar != null && requestUri.IsAbsoluteUri)
             {
                 _cookieJar.ApplyTo(message);
@@ -138,13 +140,23 @@ namespace DG.Common.Http.Fluent
         }
 
         /// <summary>
-        /// Returns a copy of this request with the HTTP body and content headers set based on the given <paramref name="content"/>.
+        /// Returns a copy of this request with the HTTP body and content headers set to a <see cref="FormUrlEncodedContent"/> created using the given <paramref name="builder"/>.
         /// </summary>
-        /// <param name="content"></param>
+        /// <param name="builder"></param>
         /// <returns></returns>
-        public FluentRequest WithContent(FluentFormContentBuilder content)
+        public FluentRequest WithContent(FluentFormContentBuilder builder)
         {
-            return WithContent(content.Build());
+            return WithContent(builder.BuildUrlEncodedForm());
+        }
+
+        /// <summary>
+        /// Returns a copy of this request with the HTTP body and content headers set to a <see cref="MultipartFormDataContent"/> created using the given <paramref name="builder"/>.
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <returns></returns>
+        public FluentRequest WithContent(FluentFormContentBuilder.IFluentMultipartFormContentBuilder builder)
+        {
+            return WithContent(builder.BuildMultipartForm());
         }
 
         /// <summary>
