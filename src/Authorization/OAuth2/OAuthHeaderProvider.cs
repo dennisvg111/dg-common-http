@@ -2,12 +2,20 @@
 
 namespace DG.Common.Http.Authorization.OAuth2
 {
+    /// <summary>
+    /// Provides <c>Authorization</c> header values for HTTP requests.
+    /// </summary>
     public class OAuthHeaderProvider : IAuthorizationHeaderProvider
     {
-        private readonly OAuthFlow _oAuthFlow;
+        private readonly OAuthFlowHandler _oAuthFlow;
         private readonly string _state;
 
-        public OAuthHeaderProvider(OAuthFlow oAuthFlow, string state)
+        /// <summary>
+        /// Initializes a new instanceo of <see cref="OAuthHeaderProvider"/> with the given <see cref="OAuthFlowHandler"/> and <paramref name="state"/>.
+        /// </summary>
+        /// <param name="oAuthFlow"></param>
+        /// <param name="state"></param>
+        public OAuthHeaderProvider(OAuthFlowHandler oAuthFlow, string state)
         {
             _oAuthFlow = oAuthFlow;
             _state = state;
