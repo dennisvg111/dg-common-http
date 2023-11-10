@@ -65,16 +65,6 @@ namespace DG.Common.Http.Fluent
         }
 
         /// <summary>
-        /// Initializes a new instance of <see cref="FluentHeader"/> for an <c>Authorization</c> header with the given header provider.
-        /// </summary>
-        /// <param name="authorizationHeaderProvider"></param>
-        /// <returns></returns>
-        public static FluentHeader Authorization(IAuthorizationHeaderProvider authorizationHeaderProvider)
-        {
-            return new FluentHeader("Authorization", () => authorizationHeaderProvider.GetAuthorizationHeaderValue(), false, () => authorizationHeaderProvider.IsAuthorized);
-        }
-
-        /// <summary>
         /// Initializes a new instance of <see cref="FluentHeader"/> for an <c>Authorization</c> header with the given value.
         /// </summary>
         /// <param name="value"></param>
@@ -89,9 +79,19 @@ namespace DG.Common.Http.Fluent
         /// </summary>
         /// <param name="headerValue"></param>
         /// <returns></returns>
-        public static FluentHeader Authorization(AuthorizationHeader headerValue)
+        public static FluentHeader Authorization(AuthorizationHeaderValue headerValue)
         {
-            return Authorization(headerValue.GetHeaderValue());
+            return Authorization(headerValue.ToString());
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="FluentHeader"/> for an <c>Authorization</c> header with the given header provider.
+        /// </summary>
+        /// <param name="authorizationHeaderProvider"></param>
+        /// <returns></returns>
+        public static FluentHeader Authorization(IAuthorizationHeaderProvider authorizationHeaderProvider)
+        {
+            return new FluentHeader("Authorization", () => authorizationHeaderProvider.GetAuthorizationHeaderValue(), false, () => authorizationHeaderProvider.IsAuthorized);
         }
 
         /// <summary>
