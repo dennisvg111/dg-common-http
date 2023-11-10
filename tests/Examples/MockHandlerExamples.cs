@@ -2,6 +2,7 @@
 using NSubstitute;
 using System.Net;
 using System.Net.Http;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace DG.Common.Http.Tests.Examples
@@ -9,7 +10,7 @@ namespace DG.Common.Http.Tests.Examples
     public class MockHandlerExamples
     {
         [Fact]
-        public async void GetResponse_CanBeMocked()
+        public async Task GetResponse_CanBeMocked()
         {
             var mockedHandler = Substitute.For<ISimpleMockHandler>();
             mockedHandler.GetResponse(Arg.Any<SimpleMockRequest>()).Returns(SimpleMockResponse.Ok());
@@ -21,7 +22,7 @@ namespace DG.Common.Http.Tests.Examples
         }
 
         [Fact]
-        public async void GetResponse_Differentiate()
+        public async Task GetResponse_Differentiate()
         {
             var mockedHandler = Substitute.For<ISimpleMockHandler>();
             mockedHandler.GetResponse(Arg.Is<SimpleMockRequest>(m => m.Method == HttpMethod.Post)).Returns(SimpleMockResponse.Ok());
@@ -36,7 +37,7 @@ namespace DG.Common.Http.Tests.Examples
         }
 
         [Fact]
-        public async void GetResponse_CountCalls()
+        public async Task GetResponse_CountCalls()
         {
             var mockedHandler = Substitute.For<ISimpleMockHandler>();
             mockedHandler.GetResponse(Arg.Any<SimpleMockRequest>()).Returns(SimpleMockResponse.Ok());
