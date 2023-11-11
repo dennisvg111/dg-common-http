@@ -21,7 +21,7 @@ namespace DG.Common.Http.Authorization.OAuth2.Data
         /// <summary>
         /// <inheritdoc cref="IReadOnlyOAuthData.ValidUntill"/>
         /// </summary>
-        public DateTimeOffset ValidUntill { get; set; }
+        public DateTimeOffset? ValidUntill { get; set; }
 
         /// <summary>
         /// <inheritdoc cref="IReadOnlyOAuthData.RefreshToken"/>
@@ -38,15 +38,23 @@ namespace DG.Common.Http.Authorization.OAuth2.Data
             }
         }
 
-        internal static OAuthData From(OAuthRequest request)
+        /// <summary>
+        /// Returns a new instance of <see cref="OAuthData"/>, with the data set based on the given <paramref name="request"/> and <see cref="Started"/> set to <see cref="DateTimeOffset.Now"/>.
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        internal static OAuthData ForNewRequest(OAuthRequest request)
         {
-            DateTimeOffset started = DateTimeOffset.UtcNow;
+            var started = DateTimeOffset.UtcNow;
             return new OAuthData()
             {
                 State = request.State,
                 Scopes = request.Scopes,
                 RedirectUri = request.RedirectUri,
-                Started = started
+                Started = started,
+                AccessToken = null,
+                RefreshToken = null,
+                ValidUntill = null
             };
         }
 

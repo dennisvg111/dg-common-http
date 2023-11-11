@@ -24,7 +24,11 @@ namespace DG.Common.Http.Authorization.OAuth2.Data
         /// <returns></returns>
         public static bool IsValid(this IReadOnlyOAuthData request)
         {
-            return request.ValidUntill >= DateTimeOffset.UtcNow;
+            if (!request.ValidUntill.HasValue)
+            {
+                return true;
+            }
+            return request.ValidUntill.Value >= DateTimeOffset.UtcNow;
         }
     }
 }

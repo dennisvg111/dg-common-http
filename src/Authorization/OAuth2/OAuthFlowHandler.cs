@@ -28,51 +28,53 @@ namespace DG.Common.Http.Authorization.OAuth2
         }
 
         /// <summary>
-        /// Returns an authorization flow from the repository for the request with the given state.
+        /// <para>Returns an authorization flow from the repository with the given state.</para>
+        /// <para>Any updates during this flow will be automatically saved to the given <see cref="IOAuthRepository"/>.</para>
         /// </summary>
         /// <param name="state"></param>
         /// <returns></returns>
         /// <exception cref="OAuthFlowNotFoundException"></exception>
         public OAuthFlow ForState(string state)
         {
-            if (!_repository.TryGetRequestByState(state, out OAuthData request))
+            if (!_repository.TryGetByState(state, out OAuthData data))
             {
                 OAuthFlowNotFoundException.ThrowForState(state);
             }
-            return new OAuthFlow(_logic, request);
+            var flow = new OAuthFlow(_logic, data);
+            flow.OnUpdate += Flow_OnUpdate;
+
+            return flow;
         }
 
         /// <summary>
-        /// <para>Returns the authorization url created for the given <paramref name="scopes"/> and <paramref name="redirectUri"/>.</para>
-        /// <para>Note that <see cref="OAuthFlow.State"/> can be used to call <see cref="AuthenticationCallback(string, string)"/> and <see cref="GetAuthorizationHeaderAsync(string)"/> later.</para>
+        /// <para>Returns an authorization flow with a newly generated state value for the given <paramref name="scopes"/> and <paramref name="redirectUri"/>.</para>
+        /// <para>Any updates during this flow will be automatically saved to the given <see cref="IOAuthRepository"/>.</para>
+        /// <para>Note that <see cref="OAuthFlow.State"/> can be used to retrieve this authorization flow using <see cref="ForState(string)"/>.</para>
         /// </summary>
         /// <param name="scopes"></param>
         /// <param name="redirectUri"></param>
         /// <returns></returns>
         public OAuthFlow StartNewFlow(string[] scopes, Uri redirectUri)
         {
-            OAuthData savedRequest;
+            OAuthFlow flow;
             lock (_repositoryLock)
             {
-                OAuthRequest request;
                 do
                 {
-                    request = OAuthRequest.NewFor(scopes, redirectUri);
-                } while (_repository.TryGetRequestByState(request.State, out OAuthData _));
+                    flow = _logic.StartNewFlow(scopes, redirectUri);
+                } while (_repository.TryGetByState(flow.State, out OAuthData _));
 
-                savedRequest = OAuthData.From(request);
-                _repository.SaveRequest(savedRequest);
+                _repository.Save(flow.Export());
             }
 
-            var flow = new OAuthFlow(_logic, savedRequest);
-            flow.OnRefresh += Flow_OnRefresh;
+            flow.OnUpdate += Flow_OnUpdate;
 
             return flow;
         }
 
-        private void Flow_OnRefresh(object sender, RefreshEventArgs e)
+        private void Flow_OnUpdate(object sender, UpdateEventArgs e)
         {
-            _repository.SaveRequest(OAuthData.From(e.Request));
+            _repository.Save(OAuthData.From(e.Data));
         }
 
         /// <summary>

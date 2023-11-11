@@ -12,34 +12,28 @@ namespace DG.Common.Http.Authorization.OAuth2
     public class OAuthFlow
     {
         /// <summary>
-        /// An event that gets invoked when this <see cref="OAuthFlow"/> refreshes the token.
+        /// An event that gets invoked when this <see cref="OAuthFlow"/> updates the access token.
         /// </summary>
-        public event EventHandler<RefreshEventArgs> OnRefresh;
+        public event EventHandler<UpdateEventArgs> OnUpdate;
 
         private readonly IOAuthLogic _logic;
 
-        private IReadOnlyOAuthData _request;
-        private bool _updated = false;
+        private IReadOnlyOAuthData _data;
 
         /// <summary>
         /// The state value of this authorization flow.
         /// </summary>
-        public string State => _request.State;
+        public string State => _data.State;
 
         /// <summary>
-        /// Indicates if the internal access token has been updated since this instance of <see cref="OAuthFlow"/> was initialized.
-        /// </summary>
-        internal bool IsUpdated => _updated;
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="OAuthFlow"/> with the given <see cref="IOAuthLogic"/>, and for the given request.
+        /// Initializes a new instance of <see cref="OAuthFlow"/> for the given <see cref="IOAuthLogic"/>, and with the given <paramref name="data"/>.
         /// </summary>
         /// <param name="logic"></param>
-        /// <param name="request"></param>
-        public OAuthFlow(IOAuthLogic logic, IReadOnlyOAuthData request)
+        /// <param name="data"></param>
+        public OAuthFlow(IOAuthLogic logic, IReadOnlyOAuthData data)
         {
             _logic = logic;
-            _request = request;
+            _data = data;
         }
 
         /// <summary>
@@ -48,7 +42,7 @@ namespace DG.Common.Http.Authorization.OAuth2
         /// <returns></returns>
         public Uri GetAuthorizationUri()
         {
-            return _logic.BuildAuthenticationUrlFor(OAuthData.From(_request));
+            return _logic.BuildAuthenticationUrlFor(OAuthData.From(_data));
         }
 
         /// <summary>
@@ -58,7 +52,7 @@ namespace DG.Common.Http.Authorization.OAuth2
         /// <returns></returns>
         public async Task AuthenticationCallback(string code)
         {
-            var token = await _logic.GetAccessTokenAsync(OAuthData.From(_request), code).ConfigureAwait(false);
+            var token = await _logic.GetAccessTokenAsync(OAuthData.From(_data), code).ConfigureAwait(false);
             UpdateRequestWith(token);
         }
 
@@ -69,18 +63,18 @@ namespace DG.Common.Http.Authorization.OAuth2
         public async Task<bool> IsAuthenticated()
         {
 
-            if (!_request.IsCompleted())
+            if (!_data.IsCompleted())
             {
                 return false;
             }
 
-            if (_request.IsValid())
+            if (_data.IsValid())
             {
                 return true;
             }
 
             var canRefresh = await RefreshAccessTokenAsync().ConfigureAwait(false);
-            return canRefresh && _request.IsCompleted() && _request.IsValid();
+            return canRefresh && _data.IsCompleted() && _data.IsValid();
         }
 
         /// <summary>
@@ -92,21 +86,21 @@ namespace DG.Common.Http.Authorization.OAuth2
         public async Task<AuthorizationHeaderValue> GetAuthorizationHeaderAsync()
         {
 
-            if (!_request.IsCompleted())
+            if (!_data.IsCompleted())
             {
-                OAuthRequestNotCompletedException.ThrowForState(_request.State);
+                OAuthRequestNotCompletedException.ThrowForState(_data.State);
             }
 
-            if (!_request.IsValid())
+            if (!_data.IsValid())
             {
                 var canRefresh = await RefreshAccessTokenAsync().ConfigureAwait(false);
                 if (!canRefresh)
                 {
-                    OAuthAuthorizationExpiredException.ThrowForState(_request.State);
+                    OAuthAuthorizationExpiredException.ThrowForState(_data.State);
                 }
             }
 
-            return _logic.GetHeaderForToken(_request.AccessToken);
+            return _logic.GetHeaderForToken(_data.AccessToken);
         }
 
         /// <summary>
@@ -115,7 +109,7 @@ namespace DG.Common.Http.Authorization.OAuth2
         /// <returns></returns>
         public async Task<bool> RefreshAccessTokenAsync()
         {
-            var canRefresh = await _logic.RefreshTokenAsync(_request.RefreshToken, out OAuthToken token).ConfigureAwait(false);
+            var canRefresh = await _logic.RefreshTokenAsync(_data.RefreshToken, out OAuthToken token).ConfigureAwait(false);
             if (!canRefresh)
             {
                 return false;
@@ -124,22 +118,34 @@ namespace DG.Common.Http.Authorization.OAuth2
             return true;
         }
 
+        /// <summary>
+        /// Invalidates the current authorization.
+        /// </summary>
+        public void Invalidate()
+        {
+            var newRequest = OAuthData.From(_data);
+            newRequest.AccessToken = null;
+            newRequest.ValidUntill = null;
+            newRequest.RefreshToken = null;
+            _data = newRequest;
+            OnUpdate?.Invoke(this, UpdateEventArgs.For(_data));
+        }
+
         private void UpdateRequestWith(OAuthToken token)
         {
-            var newRequest = OAuthData.From(_request);
+            var newRequest = OAuthData.From(_data);
             newRequest.UpdateWith(token);
-            _request = newRequest;
-            _updated = true;
-            OnRefresh?.Invoke(this, RefreshEventArgs.For(_request));
+            _data = newRequest;
+            OnUpdate?.Invoke(this, UpdateEventArgs.For(_data));
         }
 
         /// <summary>
-        /// Returns an instance of <see cref="OAuthData"/> representing the current state of this authorization flow.
+        /// Returns a new instance of <see cref="OAuthData"/> representing the current data of this authorization flow.
         /// </summary>
         /// <returns></returns>
-        public OAuthData ExportRequest()
+        public OAuthData Export()
         {
-            return OAuthData.From(_request);
+            return OAuthData.From(_data);
         }
     }
 }

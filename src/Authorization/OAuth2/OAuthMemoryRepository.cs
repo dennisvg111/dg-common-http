@@ -19,13 +19,13 @@ namespace DG.Common.Http.Authorization.OAuth2
         private readonly ConcurrentDictionary<string, OAuthData> _requests = new ConcurrentDictionary<string, OAuthData>();
 
         /// <inheritdoc/>
-        public void SaveRequest(OAuthData request)
+        public void Save(OAuthData request)
         {
             _requests[request.State] = request;
         }
 
         /// <inheritdoc/>
-        public bool TryGetRequestByState(string state, out OAuthData request)
+        public bool TryGetByState(string state, out OAuthData request)
         {
             return _requests.TryGetValue(state, out request);
         }

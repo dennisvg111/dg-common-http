@@ -8,17 +8,17 @@ namespace DG.Common.Http.Authorization.OAuth2.Interfaces
     public interface IOAuthRepository
     {
         /// <summary>
-        /// Creates or updates the given <paramref name="request"/>.
+        /// Creates or updates the given <paramref name="data"/>.
         /// </summary>
-        /// <param name="request"></param>
-        void SaveRequest(OAuthData request);
+        /// <param name="data"></param>
+        void Save(OAuthData data);
 
         /// <summary>
-        /// Tries to retrieve the <paramref name="request"/> with the given <paramref name="state"/> from the repository, and returns a value indicating if this was successful.
+        /// Tries to retrieve the <paramref name="data"/> with the given <paramref name="state"/> from the repository, and returns a value indicating if this was successful.
         /// </summary>
         /// <param name="state"></param>
-        /// <param name="request"></param>
+        /// <param name="data"></param>
         /// <returns></returns>
-        bool TryGetRequestByState(string state, out OAuthData request);
+        bool TryGetByState(string state, out OAuthData data);
     }
 }

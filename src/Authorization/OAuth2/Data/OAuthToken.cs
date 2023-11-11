@@ -8,7 +8,7 @@ namespace DG.Common.Http.Authorization.OAuth2.Data
     public class OAuthToken
     {
         private readonly string _accessToken;
-        private readonly DateTimeOffset _validUntill;
+        private readonly DateTimeOffset? _validUntill;
         private readonly string _refreshToken;
 
         /// <summary>
@@ -17,7 +17,7 @@ namespace DG.Common.Http.Authorization.OAuth2.Data
         /// <param name="accessToken"></param>
         /// <param name="validUntill"></param>
         /// <param name="refreshToken"></param>
-        public OAuthToken(string accessToken, DateTimeOffset validUntill, string refreshToken)
+        public OAuthToken(string accessToken, DateTimeOffset? validUntill, string refreshToken)
         {
             _accessToken = accessToken;
             _validUntill = validUntill;
@@ -30,9 +30,10 @@ namespace DG.Common.Http.Authorization.OAuth2.Data
         public string AccessToken => _accessToken;
 
         /// <summary>
-        /// The time untill which <see cref="AccessToken"/> is valid.
+        /// <para>The time untill which <see cref="AccessToken"/> is valid.</para>
+        /// <para>If this property is <see langword="null"/>, it is assumed this <see cref="AccessToken"/> does not expire.</para>
         /// </summary>
-        public DateTimeOffset ValidUntill => _validUntill;
+        public DateTimeOffset? ValidUntill => _validUntill;
 
         /// <summary>
         /// An optional refresh token which applications can use to obtain another access token.

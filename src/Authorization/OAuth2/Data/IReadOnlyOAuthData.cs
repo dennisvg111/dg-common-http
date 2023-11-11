@@ -33,9 +33,10 @@ namespace DG.Common.Http.Authorization.OAuth2.Data
         string AccessToken { get; }
 
         /// <summary>
-        /// The date untill <see cref="AccessToken"/> is no longer valid.
+        /// <para>The date untill <see cref="AccessToken"/> is no longer valid.</para>
+        /// <para>If this property is <see langword="null"/>, it is assumed this <see cref="AccessToken"/> does not expire.</para>
         /// </summary>
-        DateTimeOffset ValidUntill { get; }
+        DateTimeOffset? ValidUntill { get; }
 
         /// <summary>
         /// The refresh token associated with this request.

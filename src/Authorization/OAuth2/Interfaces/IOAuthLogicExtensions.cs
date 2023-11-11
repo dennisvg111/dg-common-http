@@ -14,25 +14,14 @@ namespace DG.Common.Http.Authorization.OAuth2.Interfaces
         /// <param name="oauthLogic"></param>
         /// <param name="scopes"></param>
         /// <param name="callBackUri"></param>
-        /// <param name="state"></param>
         /// <returns></returns>
-        public static OAuthFlow StartAuthorization(this IOAuthLogic oauthLogic, string[] scopes, Uri callBackUri, out string state)
+        public static OAuthFlow StartNewFlow(this IOAuthLogic oauthLogic, string[] scopes, Uri callBackUri)
         {
             var request = OAuthRequest.NewFor(scopes, callBackUri);
-            state = request.State;
-            return new OAuthFlow(oauthLogic, OAuthData.From(request));
-        }
 
-        /// <summary>
-        /// Starts a new authorization flow with the current <see cref="IOAuthLogic"/>.
-        /// </summary>
-        /// <param name="oauthLogic"></param>
-        /// <param name="scopes"></param>
-        /// <param name="callBackUri"></param>
-        /// <returns></returns>
-        public static OAuthFlow StartAuthorization(this IOAuthLogic oauthLogic, string[] scopes, Uri callBackUri)
-        {
-            return StartAuthorization(oauthLogic, scopes, callBackUri, out string _);
+            var data = OAuthData.ForNewRequest(request);
+
+            return new OAuthFlow(oauthLogic, data);
         }
     }
 }
