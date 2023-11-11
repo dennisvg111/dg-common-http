@@ -1,4 +1,6 @@
 ﻿using System.Collections.Concurrent;
+using DG.Common.Http.Authorization.OAuth2.Data;
+using DG.Common.Http.Authorization.OAuth2.Interfaces;
 
 namespace DG.Common.Http.Authorization.OAuth2
 {
@@ -14,16 +16,16 @@ namespace DG.Common.Http.Authorization.OAuth2
         /// </summary>
         public static OAuthMemoryRepository Instance => _defaultInstance;
 
-        private readonly ConcurrentDictionary<string, SavedOAuthRequest> _requests = new ConcurrentDictionary<string, SavedOAuthRequest>();
+        private readonly ConcurrentDictionary<string, OAuthData> _requests = new ConcurrentDictionary<string, OAuthData>();
 
         /// <inheritdoc/>
-        public void SaveRequest(SavedOAuthRequest request)
+        public void SaveRequest(OAuthData request)
         {
             _requests[request.State] = request;
         }
 
         /// <inheritdoc/>
-        public bool TryGetRequestByState(string state, out SavedOAuthRequest request)
+        public bool TryGetRequestByState(string state, out OAuthData request)
         {
             return _requests.TryGetValue(state, out request);
         }

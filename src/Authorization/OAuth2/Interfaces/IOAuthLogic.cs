@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
+using DG.Common.Http.Authorization.OAuth2.Data;
 
-namespace DG.Common.Http.Authorization.OAuth2
+namespace DG.Common.Http.Authorization.OAuth2.Interfaces
 {
     /// <summary>
     /// Defines functionality for managing an OAuth authorization request.

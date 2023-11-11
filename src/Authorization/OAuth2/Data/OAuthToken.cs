@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace DG.Common.Http.Authorization.OAuth2
+namespace DG.Common.Http.Authorization.OAuth2.Data
 {
     /// <summary>
     /// Represents the results of an OAuth2 authorization flow.

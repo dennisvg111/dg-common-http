@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.Serialization;
+using DG.Common.Http.Authorization.OAuth2.Data;
 
 namespace DG.Common.Http.Authorization.OAuth2.Exceptions
 {

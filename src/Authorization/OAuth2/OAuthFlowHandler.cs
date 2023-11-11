@@ -1,6 +1,7 @@
-﻿using DG.Common.Http.Authorization.OAuth2.Exceptions;
+﻿using DG.Common.Http.Authorization.OAuth2.Data;
+using DG.Common.Http.Authorization.OAuth2.Exceptions;
+using DG.Common.Http.Authorization.OAuth2.Interfaces;
 using System;
-using System.Threading.Tasks;
 
 namespace DG.Common.Http.Authorization.OAuth2
 {
@@ -10,6 +11,8 @@ namespace DG.Common.Http.Authorization.OAuth2
     /// </summary>
     public class OAuthFlowHandler
     {
+        private readonly object _repositoryLock = new object();
+
         private readonly IOAuthLogic _logic;
         private readonly IOAuthRepository _repository;
 
@@ -24,145 +27,52 @@ namespace DG.Common.Http.Authorization.OAuth2
             _repository = repository;
         }
 
-        private string GenerateState()
+        /// <summary>
+        /// Returns an authorization flow from the repository for the request with the given state.
+        /// </summary>
+        /// <param name="state"></param>
+        /// <returns></returns>
+        /// <exception cref="OAuthFlowNotFoundException"></exception>
+        public OAuthFlow ForState(string state)
         {
-            return Uulsid.NewUulsid().ToString();
+            if (!_repository.TryGetRequestByState(state, out OAuthData request))
+            {
+                OAuthFlowNotFoundException.ThrowForState(state);
+            }
+            return new OAuthFlow(_logic, request);
         }
 
         /// <summary>
         /// <para>Returns the authorization url created for the given <paramref name="scopes"/> and <paramref name="redirectUri"/>.</para>
-        /// <para>Note that <paramref name="state"/> will be used to call <see cref="AuthenticationCallback(string, string)"/> and <see cref="GetAuthorizationHeaderAsync(string)"/> later.</para>
+        /// <para>Note that <see cref="OAuthFlow.State"/> can be used to call <see cref="AuthenticationCallback(string, string)"/> and <see cref="GetAuthorizationHeaderAsync(string)"/> later.</para>
         /// </summary>
         /// <param name="scopes"></param>
         /// <param name="redirectUri"></param>
-        /// <param name="state">The state value of the new authorization request.</param>
         /// <returns></returns>
-        public Uri GetAuthorizationUri(string[] scopes, Uri redirectUri, out string state)
+        public OAuthFlow StartNewFlow(string[] scopes, Uri redirectUri)
         {
-            do
+            OAuthData savedRequest;
+            lock (_repositoryLock)
             {
-                state = GenerateState();
-            } while (_repository.TryGetRequestByState(state, out SavedOAuthRequest _));
-
-            var request = new SavedOAuthRequest()
-            {
-                State = state,
-                RedirectUrl = redirectUri,
-                Scopes = scopes,
-                Started = DateTimeOffset.UtcNow
-            };
-
-            _repository.SaveRequest(request);
-
-            return _logic.BuildAuthenticationUrlFor(request);
-        }
-
-        /// <summary>
-        /// Processes the given <paramref name="code"/>, and saves the resulting <see cref="OAuthToken"/> to the current repository.
-        /// </summary>
-        /// <param name="state"></param>
-        /// <param name="code"></param>
-        /// <returns></returns>
-        public async Task AuthenticationCallback(string state, string code)
-        {
-            if (!_repository.TryGetRequestByState(state, out SavedOAuthRequest request))
-            {
-                OAuthRequestNotFoundException.ThrowForState(state);
-            }
-
-            var token = await _logic.GetAccessTokenAsync(request, code).ConfigureAwait(false);
-            request.UpdateWith(token);
-            _repository.SaveRequest(request);
-        }
-
-        /// <summary>
-        /// Returns a value indicating if authorization is granted for the given <paramref name="state"/>.
-        /// </summary>
-        /// <param name="state"></param>
-        /// <returns></returns>
-        public async Task<bool> IsAuthenticated(string state)
-        {
-            if (!_repository.TryGetRequestByState(state, out SavedOAuthRequest request))
-            {
-                return false;
-            }
-
-            if (!request.IsCompleted)
-            {
-                return false;
-            }
-
-            if (request.ValidUntill >= DateTimeOffset.UtcNow)
-            {
-                return true;
-            }
-
-            return await RefreshRequestAsync(request).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Returns a new <see cref="AuthorizationHeaderValue"/> for the given <paramref name="state"/>.
-        /// </summary>
-        /// <param name="state"></param>
-        /// <returns></returns>
-        /// <exception cref="OAuthRequestNotFoundException"></exception>
-        /// <exception cref="OAuthRequestNotCompletedException"></exception>
-        /// <exception cref="OAuthAuthorizationExpiredException"></exception>
-        public async Task<AuthorizationHeaderValue> GetAuthorizationHeaderAsync(string state)
-        {
-            if (!_repository.TryGetRequestByState(state, out SavedOAuthRequest request))
-            {
-                OAuthRequestNotFoundException.ThrowForState(state);
-            }
-
-            if (!request.IsCompleted)
-            {
-                OAuthRequestNotCompletedException.ThrowForState(state);
-            }
-
-            if (request.ValidUntill < DateTimeOffset.UtcNow)
-            {
-                var canRefresh = await RefreshRequestAsync(request).ConfigureAwait(false);
-                if (!canRefresh)
+                OAuthRequest request;
+                do
                 {
-                    OAuthAuthorizationExpiredException.ThrowForState(state);
-                }
+                    request = OAuthRequest.NewFor(scopes, redirectUri);
+                } while (_repository.TryGetRequestByState(request.State, out OAuthData _));
+
+                savedRequest = OAuthData.From(request);
+                _repository.SaveRequest(savedRequest);
             }
 
-            return _logic.GetHeaderForToken(request.AccessToken);
+            var flow = new OAuthFlow(_logic, savedRequest);
+            flow.OnRefresh += Flow_OnRefresh;
+
+            return flow;
         }
 
-        private async Task<bool> RefreshRequestAsync(SavedOAuthRequest request)
+        private void Flow_OnRefresh(object sender, RefreshEventArgs e)
         {
-            var canRefresh = await _logic.RefreshTokenAsync(request.RefreshToken, out OAuthToken token).ConfigureAwait(false);
-            if (!canRefresh)
-            {
-                return false;
-            }
-            _repository.SaveRequest(request);
-            request.UpdateWith(token);
-            return true;
-        }
-
-        /// <summary>
-        /// Returns a new instance of <see cref="OAuthHeaderProvider"/> for the given <paramref name="state"/>.
-        /// </summary>
-        /// <param name="state"></param>
-        /// <returns></returns>
-        public OAuthHeaderProvider HeaderProviderFor(string state)
-        {
-            return new OAuthHeaderProvider(this, state);
-        }
-
-        /// <summary>
-        /// Returns a new instance of <see cref="OAuthFlow"/> with the given <paramref name="scopes"/> and <paramref name="redirectUri"/>, to start the authorization for a single user.
-        /// </summary>
-        /// <param name="scopes"></param>
-        /// <param name="redirectUri"></param>
-        /// <returns></returns>
-        public OAuthFlow StartFlowFor(string[] scopes, Uri redirectUri)
-        {
-            return new OAuthFlow(this, scopes, redirectUri);
+            _repository.SaveRequest(OAuthData.From(e.Request));
         }
 
         /// <summary>
