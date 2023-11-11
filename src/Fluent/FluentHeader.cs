@@ -91,18 +91,18 @@ namespace DG.Common.Http.Fluent
         /// <returns></returns>
         public static FluentHeader Authorization(IAuthorizationHeaderProvider authorizationHeaderProvider)
         {
-            return new FluentHeader("Authorization", () => authorizationHeaderProvider.GetAuthorizationHeaderValue(), false, () => authorizationHeaderProvider.IsAuthorized);
+            return new FluentHeader("Authorization", () => authorizationHeaderProvider.GetAuthorizationHeaderValue(), false, () => true);
         }
 
         /// <summary>
-        /// Initializes a new instance of <see cref="FluentHeader"/> for an <c>Authorization</c> header based on the given authorization provider.
+        /// <para>Initializes a new instance of <see cref="FluentHeader"/> for an <c>Authorization</c> header with the given header provider.</para>
+        /// <para>This header will only be applied if <see cref="IAuthorizationHeaderProvider.IsAuthorized"/> returns <see langword="true"/></para>
         /// </summary>
-        /// <param name="expiringAuthorizationProvider"></param>
+        /// <param name="authorizationHeaderProvider"></param>
         /// <returns></returns>
-        public static FluentHeader Authorization(IExpiringAuthorizationProvider expiringAuthorizationProvider)
+        public static FluentHeader OptionalAuthorization(IAuthorizationHeaderProvider authorizationHeaderProvider)
         {
-            var headerProvider = new ExpiringAuthorizationHeaderProvider(expiringAuthorizationProvider);
-            return Authorization(headerProvider);
+            return new FluentHeader("Authorization", () => authorizationHeaderProvider.GetAuthorizationHeaderValue(), false, () => authorizationHeaderProvider.IsAuthorized);
         }
 
         /// <summary>
