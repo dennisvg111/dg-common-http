@@ -1,15 +1,17 @@
 ﻿using DG.Common.Http.Authorization.OAuth2.Data;
 using DG.Common.Http.Authorization.OAuth2.Exceptions;
 using DG.Common.Http.Authorization.OAuth2.Interfaces;
+using DG.Common.Threading;
 using System;
 using System.Threading.Tasks;
 
 namespace DG.Common.Http.Authorization.OAuth2
 {
     /// <summary>
-    /// Represents the OAuth2 flow for a single authorization request.
+    /// <para>Represents the OAuth2 flow for a single authorization request.</para>
+    /// <para>Note that this class also implements <see cref="IAuthorizationHeaderProvider"/>.</para>
     /// </summary>
-    public class OAuthFlow
+    public class OAuthFlow : IAuthorizationHeaderProvider
     {
         /// <summary>
         /// An event that gets invoked when this <see cref="OAuthFlow"/> updates the access token.
@@ -146,6 +148,16 @@ namespace DG.Common.Http.Authorization.OAuth2
         public OAuthData Export()
         {
             return OAuthData.From(_data);
+        }
+
+        /// <inheritdoc/>
+        bool IAuthorizationHeaderProvider.IsAuthorized => SafeSync.Run(() => IsAuthenticated());
+
+        /// <inheritdoc/>
+        string IAuthorizationHeaderProvider.GetAuthorizationHeaderValue()
+        {
+            var header = SafeSync.Run(() => GetAuthorizationHeaderAsync());
+            return header.ToString();
         }
     }
 }

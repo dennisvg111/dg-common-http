@@ -1,6 +1,6 @@
-﻿using System;
+﻿using DG.Common.Http.Authorization.OAuth2.Data;
+using System;
 using System.Runtime.Serialization;
-using DG.Common.Http.Authorization.OAuth2.Data;
 
 namespace DG.Common.Http.Authorization.OAuth2.Exceptions
 {
@@ -18,7 +18,7 @@ namespace DG.Common.Http.Authorization.OAuth2.Exceptions
         public string State => _state;
 
         /// <inheritdoc/>
-        public override string Message => $"Request with state {_state} has not been completed. Please ensure {nameof(OAuthFlowHandler.AuthenticationCallback)} has been called.";
+        public override string Message => $"Request with state {_state} has not been completed. Please ensure {nameof(OAuthFlow.AuthenticationCallback)} has been called.";
 
         /// <summary>
         /// Initializes a new instance of <see cref="OAuthRequestNotCompletedException"/> with the given <paramref name="state"/>.
