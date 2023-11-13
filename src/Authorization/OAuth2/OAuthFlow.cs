@@ -111,6 +111,10 @@ namespace DG.Common.Http.Authorization.OAuth2
         /// <returns></returns>
         public async Task<bool> RefreshAccessTokenAsync()
         {
+            if (!_data.HasRefreshToken())
+            {
+                return await Task.FromResult(false);
+            }
             var tokenResult = await _logic.RefreshTokenAsync(_data.RefreshToken).ConfigureAwait(false);
             if (!tokenResult.TryGet(out OAuthToken token))
             {
