@@ -47,14 +47,14 @@ namespace DG.Common.Http.Authorization.OAuth2
         }
 
         /// <summary>
-        /// <para>Returns a new authorization flow with a newly generated state value, for the given <paramref name="scopes"/> and <paramref name="redirectUri"/>.</para>
+        /// <para>Returns a new authorization flow with a newly generated state value, for the given <paramref name="scopes"/> and <paramref name="callBackUri"/>.</para>
         /// <para>Any updates during this flow will be automatically saved to the given <see cref="IOAuthRepository"/>.</para>
         /// <para>Note that <see cref="OAuthFlow.State"/> can be used to retrieve this authorization flow using <see cref="ForState(string)"/>, if needed.</para>
         /// </summary>
         /// <param name="scopes"></param>
-        /// <param name="redirectUri"></param>
+        /// <param name="callBackUri"></param>
         /// <returns></returns>
-        public OAuthFlow StartNewFlow(string[] scopes, Uri redirectUri)
+        public OAuthFlow StartNewFlow(string[] scopes, Uri callBackUri)
         {
             lock (_repositoryLock)
             {
@@ -68,7 +68,7 @@ namespace DG.Common.Http.Authorization.OAuth2
                 {
                     State = state,
                     Scopes = scopes,
-                    RedirectUri = redirectUri
+                    CallBackUri = callBackUri
                 };
 
                 return StartNewFlow(request);

@@ -50,7 +50,7 @@ namespace DG.Common.Http.Authorization.OAuth2.Data
             {
                 State = request.State,
                 Scopes = request.Scopes,
-                RedirectUri = request.RedirectUri,
+                CallBackUri = request.CallBackUri,
                 Started = started,
                 AccessToken = null,
                 RefreshToken = null,
@@ -69,7 +69,7 @@ namespace DG.Common.Http.Authorization.OAuth2.Data
             {
                 State = request.State,
                 Scopes = request.Scopes,
-                RedirectUri = request.RedirectUri,
+                CallBackUri = request.CallBackUri,
                 Started = request.Started,
                 AccessToken = request.AccessToken,
                 ValidUntill = request.ValidUntill,

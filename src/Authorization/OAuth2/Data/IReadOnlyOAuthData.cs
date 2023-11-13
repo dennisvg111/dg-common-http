@@ -13,9 +13,9 @@ namespace DG.Common.Http.Authorization.OAuth2.Data
         string State { get; }
 
         /// <summary>
-        /// The <see cref="Uri"/> that the server should redirect to after the authorization prompt.
+        /// The <see cref="Uri"/> that the authorization server should redirect to after the authorization prompt.
         /// </summary>
-        Uri RedirectUri { get; }
+        Uri CallBackUri { get; }
 
         /// <summary>
         /// The scopes this client is asking for.

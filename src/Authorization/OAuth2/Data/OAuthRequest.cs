@@ -13,9 +13,9 @@ namespace DG.Common.Http.Authorization.OAuth2.Data
         public string State { get; set; }
 
         /// <summary>
-        /// <inheritdoc cref="IReadOnlyOAuthData.RedirectUri"/>
+        /// <inheritdoc cref="IReadOnlyOAuthData.CallBackUri"/>
         /// </summary>
-        public Uri RedirectUri { get; set; }
+        public Uri CallBackUri { get; set; }
 
         /// <summary>
         /// <inheritdoc cref="IReadOnlyOAuthData.Scopes"/>

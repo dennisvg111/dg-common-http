@@ -21,7 +21,7 @@ namespace DG.Common.Http.Authorization.OAuth2.Interfaces
             {
                 State = OAuthState.NewState(),
                 Scopes = scopes,
-                RedirectUri = callBackUri
+                CallBackUri = callBackUri
             };
             return oauthLogic.StartNewFlow(request);
         }
