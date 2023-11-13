@@ -106,13 +106,13 @@ namespace DG.Common.Http.Authorization.OAuth2
         }
 
         /// <summary>
-        /// Refreshes the access token of this authorization flow.
+        /// Refreshes the access token of this authorization flow, and returns a value indicating if this was successful.
         /// </summary>
         /// <returns></returns>
         public async Task<bool> RefreshAccessTokenAsync()
         {
-            var canRefresh = await _logic.RefreshTokenAsync(_data.RefreshToken, out OAuthToken token).ConfigureAwait(false);
-            if (!canRefresh)
+            var tokenResult = await _logic.RefreshTokenAsync(_data.RefreshToken).ConfigureAwait(false);
+            if (!tokenResult.TryGet(out OAuthToken token))
             {
                 return false;
             }

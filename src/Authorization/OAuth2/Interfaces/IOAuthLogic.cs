@@ -1,6 +1,7 @@
-﻿using System;
+﻿using DG.Common.Http.Authorization.OAuth2.Data;
+using DG.Common.Threading;
+using System;
 using System.Threading.Tasks;
-using DG.Common.Http.Authorization.OAuth2.Data;
 
 namespace DG.Common.Http.Authorization.OAuth2.Interfaces
 {
@@ -25,12 +26,11 @@ namespace DG.Common.Http.Authorization.OAuth2.Interfaces
         Task<OAuthToken> GetAccessTokenAsync(OAuthRequest request, string callBackCode);
 
         /// <summary>
-        /// Retrieves a refreshed <see cref="OAuthToken"/> based on the given <paramref name="refreshToken"/>, and returns a value indicating if this operation succeeded.
+        /// Retrieves a refreshed <see cref="OAuthToken"/> based on the given <paramref name="refreshToken"/>..
         /// </summary>
         /// <param name="refreshToken"></param>
-        /// <param name="token"></param>
         /// <returns></returns>
-        Task<bool> RefreshTokenAsync(string refreshToken, out OAuthToken token);
+        Task<TaskResult<OAuthToken>> RefreshTokenAsync(string refreshToken);
 
         /// <summary>
         /// Returns a new <see cref="AuthorizationHeaderValue"/> for te given <paramref name="accessToken"/>.
