@@ -3,7 +3,7 @@
     <ProjectGuid>a64bb580-9b54-48c0-b954-6d67d1c5dde0</ProjectGuid>
     <TargetFramework>net452</TargetFramework>
     <AssemblyTitle>DG.Common.Http</AssemblyTitle>
-    <AssemblyVersion>1.2.7</AssemblyVersion>
+    <AssemblyVersion>1.2.8</AssemblyVersion>
     <Product>DG.Common.Http</Product>
     <Copyright>Copyright ©  2023</Copyright>
     <OutputPath>bin\$(Configuration)\</OutputPath>
