@@ -1,6 +1,6 @@
-﻿using System.Collections.Concurrent;
-using DG.Common.Http.Authorization.OAuth2.Data;
+﻿using DG.Common.Http.Authorization.OAuth2.Data;
 using DG.Common.Http.Authorization.OAuth2.Interfaces;
+using System.Collections.Concurrent;
 
 namespace DG.Common.Http.Authorization.OAuth2
 {
@@ -19,15 +19,25 @@ namespace DG.Common.Http.Authorization.OAuth2
         private readonly ConcurrentDictionary<string, OAuthData> _requests = new ConcurrentDictionary<string, OAuthData>();
 
         /// <inheritdoc/>
-        public void Save(OAuthData request)
+        public void Save(OAuthData data)
         {
-            _requests[request.State] = request;
+            _requests[data.State] = data;
         }
 
         /// <inheritdoc/>
-        public bool TryGetByState(string state, out OAuthData request)
+        public bool TryGetByState(string state, out OAuthData data)
         {
-            return _requests.TryGetValue(state, out request);
+            return _requests.TryGetValue(state, out data);
+        }
+
+        /// <inheritdoc/>
+        public void RemoveDataByState(string state)
+        {
+            if (!_requests.ContainsKey(state))
+            {
+                return;
+            }
+            _requests.TryRemove(state, out OAuthData _);
         }
     }
 }

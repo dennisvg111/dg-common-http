@@ -20,5 +20,11 @@ namespace DG.Common.Http.Authorization.OAuth2.Interfaces
         /// <param name="data"></param>
         /// <returns></returns>
         bool TryGetByState(string state, out OAuthData data);
+
+        /// <summary>
+        /// Removes the authorization data for the given <paramref name="state"/> from the repository.
+        /// </summary>
+        /// <param name="state"></param>
+        void RemoveDataByState(string state);
     }
 }
