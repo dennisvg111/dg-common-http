@@ -17,8 +17,23 @@ namespace DG.Common.Http.Authorization.OAuth2.Interfaces
         /// <returns></returns>
         public static OAuthFlow StartNewFlow(this IOAuthLogic oauthLogic, string[] scopes, Uri callBackUri)
         {
-            var request = OAuthRequest.NewFor(scopes, callBackUri);
+            var request = new OAuthRequest()
+            {
+                State = OAuthState.NewState(),
+                Scopes = scopes,
+                RedirectUri = callBackUri
+            };
+            return oauthLogic.StartNewFlow(request);
+        }
 
+        /// <summary>
+        /// Starts a new authorization flow with the current <see cref="IOAuthLogic"/>.
+        /// </summary>
+        /// <param name="oauthLogic"></param>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public static OAuthFlow StartNewFlow(this IOAuthLogic oauthLogic, OAuthRequest request)
+        {
             var data = OAuthData.ForNewRequest(request);
 
             return new OAuthFlow(oauthLogic, data);

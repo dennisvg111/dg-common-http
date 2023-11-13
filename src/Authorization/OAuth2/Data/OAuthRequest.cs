@@ -21,20 +21,5 @@ namespace DG.Common.Http.Authorization.OAuth2.Data
         /// <inheritdoc cref="IReadOnlyOAuthData.Scopes"/>
         /// </summary>
         public string[] Scopes { get; set; }
-
-        private static string GenerateState()
-        {
-            return Uulsid.NewUulsid().ToString();
-        }
-
-        internal static OAuthRequest NewFor(string[] scope, Uri redirectUri)
-        {
-            return new OAuthRequest()
-            {
-                State = GenerateState(),
-                Scopes = scope,
-                RedirectUri = redirectUri
-            };
-        }
     }
 }
