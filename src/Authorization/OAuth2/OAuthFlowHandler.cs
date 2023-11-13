@@ -41,8 +41,8 @@ namespace DG.Common.Http.Authorization.OAuth2
                 OAuthFlowNotFoundException.ThrowForState(state);
             }
             var flow = new OAuthFlow(_logic, data);
+            flow.OnUpdate += Flow_OnUpdate;
 
-            SetupOnUpdate(flow);
             return flow;
         }
 
@@ -87,16 +87,9 @@ namespace DG.Common.Http.Authorization.OAuth2
             var flow = _logic.StartNewFlow(request);
 
             _repository.Save(flow.Export());
-
-            SetupOnUpdate(flow);
-            return flow;
-        }
-
-        private void SetupOnUpdate(OAuthFlow flow)
-        {
-            //Prevent Flow_OnUpdate being called twice
-            flow.OnUpdate -= Flow_OnUpdate;
             flow.OnUpdate += Flow_OnUpdate;
+
+            return flow;
         }
 
         private void Flow_OnUpdate(object sender, UpdateEventArgs e)
