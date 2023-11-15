@@ -15,7 +15,7 @@ namespace DG.Common.Http.Authorization.OAuth2.Interfaces
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        Uri BuildAuthenticationUrlFor(OAuthRequest request);
+        Uri BuildAuthorizationUri(OAuthRequest request);
 
         /// <summary>
         /// Retrieves an <see cref="OAuthToken"/> based on the given <see cref="OAuthRequest"/>, and <paramref name="callBackCode"/>.
