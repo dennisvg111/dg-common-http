@@ -23,7 +23,7 @@ namespace DG.Common.Http.Tests.Authorization.OAuth2
             TestOAuthorizationServer.Instance.StartAuthorization(request);
             TestOAuthorizationServer.Instance.AcceptAuthorization(request, out string code);
 
-            await flow.AuthenticationCallback(code);
+            await flow.AuthorizationCallback(code);
 
             repository.Received(2).Save(Arg.Any<OAuthData>());
 

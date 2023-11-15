@@ -15,7 +15,7 @@ namespace DG.Common.Http.Tests.Authorization.OAuth2
             return new TestOAuthLogic();
         }
 
-        public Uri BuildAuthenticationUrlFor(OAuthRequest request)
+        public Uri BuildAuthorizationUri(OAuthRequest request)
         {
             return new UriBuilder("https://authorization.com")
                 .WithQuery("callback_uri", request.CallBackUri.OriginalString)
