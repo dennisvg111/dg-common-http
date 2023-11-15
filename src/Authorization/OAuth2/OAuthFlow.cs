@@ -113,7 +113,7 @@ namespace DG.Common.Http.Authorization.OAuth2
         {
             if (!_data.HasRefreshToken())
             {
-                return await Task.FromResult(false);
+                return await Task.FromResult(false).ConfigureAwait(false);
             }
             var tokenResult = await _logic.RefreshTokenAsync(_data.RefreshToken).ConfigureAwait(false);
             if (tokenResult.TryGet(out OAuthToken token))
