@@ -116,12 +116,18 @@ namespace DG.Common.Http.Authorization.OAuth2
                 return await Task.FromResult(false);
             }
             var tokenResult = await _logic.RefreshTokenAsync(_data.RefreshToken).ConfigureAwait(false);
-            if (!tokenResult.TryGet(out OAuthToken token))
+            if (tokenResult.TryGet(out OAuthToken token))
             {
-                return false;
+                UpdateRequestWith(token);
+                return true;
             }
-            UpdateRequestWith(token);
-            return true;
+
+            if (!tokenResult.FailedBecauseOfException)
+            {
+                Invalidate();
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -130,8 +136,7 @@ namespace DG.Common.Http.Authorization.OAuth2
         public void Invalidate()
         {
             var newRequest = OAuthData.From(_data);
-            newRequest.AccessToken = null;
-            newRequest.ValidUntill = null;
+            newRequest.ValidUntill = new DateTimeOffset(0, TimeSpan.Zero);
             newRequest.RefreshToken = null;
             _data = newRequest;
             OnUpdate?.Invoke(this, UpdateEventArgs.For(_data));
