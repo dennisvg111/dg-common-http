@@ -14,6 +14,25 @@ namespace DG.Common.Http.Tests.Authorization.OAuth2
     public class OAuthFlowTests
     {
         [Fact]
+        public async Task AuthorizationCallbackAsync_Calls_GetAccessTokenAsync()
+        {
+            string callbackCode = "callback-code";
+            string accessToken = "access-token";
+            string refreshToken = "refresh-token";
+            var logic = Substitute.For<IOAuthLogic>();
+            Func<OAuthToken> resultFunc = () => new OAuthToken(accessToken, DateTimeOffset.UtcNow.AddDays(1), refreshToken);
+            logic.GetAccessTokenAsync(Arg.Any<OAuthRequest>(), Arg.Is(callbackCode)).Returns(Task.FromResult(resultFunc()));
+
+            var flow = logic.StartNewFlow(new string[0], new Uri("https://www.test.com/callback"));
+            await flow.AuthorizationCallbackAsync(callbackCode);
+            var result = flow.Export();
+
+            await logic.Received(1).GetAccessTokenAsync(Arg.Any<OAuthRequest>(), Arg.Is(callbackCode));
+            Assert.Equal(accessToken, result.AccessToken);
+            Assert.Equal(refreshToken, result.RefreshToken);
+        }
+
+        [Fact]
         public async Task IsAuthorizedAsync_NotCompleted_ReturnsFalse()
         {
             var logic = Substitute.For<IOAuthLogic>();
