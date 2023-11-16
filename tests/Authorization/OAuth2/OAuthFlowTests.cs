@@ -134,5 +134,35 @@ namespace DG.Common.Http.Tests.Authorization.OAuth2
 
             await Assert.ThrowsAnyAsync<OAuthAuthorizationExpiredException>(action);
         }
+
+        [Fact]
+        public void Export_ContainsAllData()
+        {
+            var logic = Substitute.For<IOAuthLogic>();
+            OAuthData data = new OAuthData()
+            {
+                State = "request-state",
+                Scopes = new string[] { "user-read", "mail-read", "mail-send" },
+                CallBackUri = new Uri("https://www.test.com/callback"),
+                Started = new DateTimeOffset(2023, 11, 16, 10, 33, 00, TimeSpan.FromHours(1)),
+                AccessToken = "access-token",
+                ValidUntill = DateTimeOffset.UtcNow.AddDays(10),
+                RefreshToken = "refresh-token"
+            };
+
+            var flow = new OAuthFlow(logic, data);
+            var export = flow.Export();
+
+            //export should return new instance.
+            Assert.NotEqual(data, export);
+
+            Assert.Equal(data.State, export.State);
+            Assert.Equal(data.Scopes, export.Scopes);
+            Assert.Equal(data.CallBackUri, export.CallBackUri);
+            Assert.Equal(data.Started, export.Started);
+            Assert.Equal(data.AccessToken, export.AccessToken);
+            Assert.Equal(data.ValidUntill, export.ValidUntill);
+            Assert.Equal(data.RefreshToken, export.RefreshToken);
+        }
     }
 }
