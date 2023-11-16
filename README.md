@@ -98,7 +98,6 @@ var request = new HttpRequestMessage(HttpMethod.Post, "https://api-service.com")
 request.Headers.Add("Authorization", headerValue.ToString());
 
 // OAuthFlow can also be used to provide Authorization headers to a FluentRequest directly, like this:
-
 var request = FluentRequest.Post.To("https://api-service.com")
   .WithAuthorization(flow);
 ```
