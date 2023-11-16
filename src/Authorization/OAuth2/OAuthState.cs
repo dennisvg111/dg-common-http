@@ -1,4 +1,6 @@
-﻿namespace DG.Common.Http.Authorization.OAuth2
+﻿using System;
+
+namespace DG.Common.Http.Authorization.OAuth2
 {
     /// <summary>
     /// The default algorithm to generate new state values, for authorization requests.
@@ -11,7 +13,7 @@
         /// <returns></returns>
         public static string NewState()
         {
-            return Uulsid.NewUulsid().ToString();
+            return (Uulsid.NewUulsid().ToString() + "." + Guid.NewGuid().ToString()).ToLowerInvariant();
         }
     }
 }
