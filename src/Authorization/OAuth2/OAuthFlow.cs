@@ -52,7 +52,7 @@ namespace DG.Common.Http.Authorization.OAuth2
         /// </summary>
         /// <param name="code"></param>
         /// <returns></returns>
-        public async Task AuthorizationCallback(string code)
+        public async Task AuthorizationCallbackAsync(string code)
         {
             var token = await _logic.GetAccessTokenAsync(OAuthData.From(_data), code).ConfigureAwait(false);
             UpdateRequestWith(token);
@@ -62,7 +62,7 @@ namespace DG.Common.Http.Authorization.OAuth2
         /// Returns a value indicating if authorization is granted for this <see cref="OAuthFlow"/>.
         /// </summary>
         /// <returns></returns>
-        public async Task<bool> IsAuthorized()
+        public async Task<bool> IsAuthorizedAsync()
         {
 
             if (!_data.IsCompleted())
@@ -160,7 +160,7 @@ namespace DG.Common.Http.Authorization.OAuth2
         }
 
         /// <inheritdoc/>
-        bool IAuthorizationHeaderProvider.IsAuthorized => SafeSync.Run(() => IsAuthorized());
+        bool IAuthorizationHeaderProvider.IsAuthorized => SafeSync.Run(() => IsAuthorizedAsync());
 
         /// <inheritdoc/>
         string IAuthorizationHeaderProvider.GetAuthorizationHeaderValue()
