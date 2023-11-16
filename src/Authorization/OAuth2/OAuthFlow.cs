@@ -75,7 +75,7 @@ namespace DG.Common.Http.Authorization.OAuth2
                 return true;
             }
 
-            var canRefresh = await RefreshAccessTokenAsync().ConfigureAwait(false);
+            var canRefresh = await TryRefreshAccessTokenAsync().ConfigureAwait(false);
             return canRefresh && _data.IsCompleted() && !_data.IsExpired();
         }
 
@@ -95,7 +95,7 @@ namespace DG.Common.Http.Authorization.OAuth2
 
             if (_data.IsExpired())
             {
-                var canRefresh = await RefreshAccessTokenAsync().ConfigureAwait(false);
+                var canRefresh = await TryRefreshAccessTokenAsync().ConfigureAwait(false);
                 if (!canRefresh)
                 {
                     OAuthAuthorizationExpiredException.ThrowForState(_data.State);
@@ -109,13 +109,13 @@ namespace DG.Common.Http.Authorization.OAuth2
         /// Refreshes the access token of this authorization flow, and returns a value indicating if this was successful.
         /// </summary>
         /// <returns></returns>
-        public async Task<bool> RefreshAccessTokenAsync()
+        public async Task<bool> TryRefreshAccessTokenAsync()
         {
             if (!_data.HasRefreshToken())
             {
                 return await Task.FromResult(false).ConfigureAwait(false);
             }
-            var tokenResult = await _logic.RefreshTokenAsync(_data.RefreshToken).ConfigureAwait(false);
+            var tokenResult = await _logic.TryRefreshTokenAsync(_data.RefreshToken).ConfigureAwait(false);
             if (tokenResult.TryGet(out OAuthToken token))
             {
                 UpdateRequestWith(token);

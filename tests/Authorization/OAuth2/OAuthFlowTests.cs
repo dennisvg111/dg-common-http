@@ -76,7 +76,7 @@ namespace DG.Common.Http.Tests.Authorization.OAuth2
         {
             var logic = Substitute.For<IOAuthLogic>();
             Func<TaskResult<OAuthToken>> resultFunc = () => TaskResult.Success(new OAuthToken("access-token", DateTimeOffset.UtcNow.AddDays(1), "refresh-token"));
-            logic.RefreshTokenAsync(Arg.Any<string>()).Returns(Task.FromResult(resultFunc()));
+            logic.TryRefreshTokenAsync(Arg.Any<string>()).Returns(Task.FromResult(resultFunc()));
             string refreshToken = "refresh-" + Guid.NewGuid();
             var data = new OAuthData()
             {
@@ -92,7 +92,7 @@ namespace DG.Common.Http.Tests.Authorization.OAuth2
 
             var isAuthorized = await flow.IsAuthorizedAsync();
 
-            await logic.Received(1).RefreshTokenAsync(Arg.Is(refreshToken));
+            await logic.Received(1).TryRefreshTokenAsync(Arg.Is(refreshToken));
             Assert.True(isAuthorized);
         }
 

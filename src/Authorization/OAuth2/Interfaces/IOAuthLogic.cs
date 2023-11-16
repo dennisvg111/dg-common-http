@@ -30,7 +30,7 @@ namespace DG.Common.Http.Authorization.OAuth2.Interfaces
         /// </summary>
         /// <param name="refreshToken"></param>
         /// <returns></returns>
-        Task<TaskResult<OAuthToken>> RefreshTokenAsync(string refreshToken);
+        Task<TaskResult<OAuthToken>> TryRefreshTokenAsync(string refreshToken);
 
         /// <summary>
         /// Returns a new <see cref="AuthorizationHeaderValue"/> for te given <paramref name="accessToken"/>.

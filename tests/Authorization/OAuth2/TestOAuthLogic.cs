@@ -35,7 +35,7 @@ namespace DG.Common.Http.Tests.Authorization.OAuth2
             throw new NotImplementedException();
         }
 
-        public async Task<TaskResult<OAuthToken>> RefreshTokenAsync(string refreshToken)
+        public async Task<TaskResult<OAuthToken>> TryRefreshTokenAsync(string refreshToken)
         {
             var token = TestOAuthorizationServer.Instance.Refresh(refreshToken);
             if (token != null)

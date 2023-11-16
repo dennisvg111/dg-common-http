@@ -27,7 +27,7 @@ namespace DG.Common.Http.Tests.Authorization.OAuth2
 
             repository.Received(2).Save(Arg.Any<OAuthData>());
 
-            await flow.RefreshAccessTokenAsync();
+            await flow.TryRefreshAccessTokenAsync();
 
             repository.Received(3).Save(Arg.Any<OAuthData>());
         }
