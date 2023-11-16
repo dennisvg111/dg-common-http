@@ -11,7 +11,7 @@ namespace DG.Common.Http.Authorization.OAuth2
         private readonly IReadOnlyOAuthData _data;
 
         /// <summary>
-        /// The authorization data, with updated values for <see cref="IReadOnlyOAuthData.AccessToken"/>, <see cref="IReadOnlyOAuthData.RefreshToken"/>, and <see cref="IReadOnlyOAuthData.ValidUntill"/>.
+        /// The authorization data, with updated values for <see cref="IReadOnlyOAuthData.AccessToken"/>, <see cref="IReadOnlyOAuthData.RefreshToken"/>, and <see cref="IReadOnlyOAuthData.AccessTokenExpirationDate"/>.
         /// </summary>
         public IReadOnlyOAuthData Data => _data;
 

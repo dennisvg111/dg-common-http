@@ -19,9 +19,9 @@ namespace DG.Common.Http.Authorization.OAuth2.Data
         public string AccessToken { get; set; }
 
         /// <summary>
-        /// <inheritdoc cref="IReadOnlyOAuthData.ValidUntill"/>
+        /// <inheritdoc cref="IReadOnlyOAuthData.AccessTokenExpirationDate"/>
         /// </summary>
-        public DateTimeOffset? ValidUntill { get; set; }
+        public DateTimeOffset? AccessTokenExpirationDate { get; set; }
 
         /// <summary>
         /// <inheritdoc cref="IReadOnlyOAuthData.RefreshToken"/>
@@ -31,7 +31,7 @@ namespace DG.Common.Http.Authorization.OAuth2.Data
         internal void UpdateWith(OAuthToken token)
         {
             AccessToken = token.AccessToken;
-            ValidUntill = token.ValidUntill;
+            AccessTokenExpirationDate = token.ValidUntill;
             if (!string.IsNullOrEmpty(token.RefreshToken))
             {
                 RefreshToken = token.RefreshToken;
@@ -54,7 +54,7 @@ namespace DG.Common.Http.Authorization.OAuth2.Data
                 Started = started,
                 AccessToken = null,
                 RefreshToken = null,
-                ValidUntill = null
+                AccessTokenExpirationDate = null
             };
         }
 
@@ -72,7 +72,7 @@ namespace DG.Common.Http.Authorization.OAuth2.Data
                 CallBackUri = request.CallBackUri,
                 Started = request.Started,
                 AccessToken = request.AccessToken,
-                ValidUntill = request.ValidUntill,
+                AccessTokenExpirationDate = request.AccessTokenExpirationDate,
                 RefreshToken = request.RefreshToken
             };
         }

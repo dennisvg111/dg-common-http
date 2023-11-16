@@ -61,7 +61,7 @@ namespace DG.Common.Http.Tests.Authorization.OAuth2
                 CallBackUri = new System.Uri("https://www.test.com"),
                 Started = DateTimeOffset.UtcNow,
                 AccessToken = Guid.NewGuid().ToString(),
-                ValidUntill = DateTimeOffset.UtcNow.AddDays(1),
+                AccessTokenExpirationDate = DateTimeOffset.UtcNow.AddDays(1),
                 RefreshToken = Guid.NewGuid().ToString()
             };
             var flow = new OAuthFlow(logic, data);
@@ -85,7 +85,7 @@ namespace DG.Common.Http.Tests.Authorization.OAuth2
                 CallBackUri = new System.Uri("https://www.test.com"),
                 Started = DateTimeOffset.UtcNow,
                 AccessToken = Guid.NewGuid().ToString(),
-                ValidUntill = DateTimeOffset.UtcNow.AddDays(-1),
+                AccessTokenExpirationDate = DateTimeOffset.UtcNow.AddDays(-1),
                 RefreshToken = refreshToken
             };
             var flow = new OAuthFlow(logic, data);
@@ -126,7 +126,7 @@ namespace DG.Common.Http.Tests.Authorization.OAuth2
                 Started = DateTimeOffset.UtcNow,
                 AccessToken = Guid.NewGuid().ToString(),
                 RefreshToken = Guid.NewGuid().ToString(),
-                ValidUntill = DateTimeOffset.UtcNow.AddHours(-1)
+                AccessTokenExpirationDate = DateTimeOffset.UtcNow.AddHours(-1)
             };
             var flow = new OAuthFlow(logic, data);
 
@@ -146,7 +146,7 @@ namespace DG.Common.Http.Tests.Authorization.OAuth2
                 CallBackUri = new Uri("https://www.test.com/callback"),
                 Started = new DateTimeOffset(2023, 11, 16, 10, 33, 00, TimeSpan.FromHours(1)),
                 AccessToken = "access-token",
-                ValidUntill = DateTimeOffset.UtcNow.AddDays(10),
+                AccessTokenExpirationDate = DateTimeOffset.UtcNow.AddDays(10),
                 RefreshToken = "refresh-token"
             };
 
@@ -161,7 +161,7 @@ namespace DG.Common.Http.Tests.Authorization.OAuth2
             Assert.Equal(data.CallBackUri, export.CallBackUri);
             Assert.Equal(data.Started, export.Started);
             Assert.Equal(data.AccessToken, export.AccessToken);
-            Assert.Equal(data.ValidUntill, export.ValidUntill);
+            Assert.Equal(data.AccessTokenExpirationDate, export.AccessTokenExpirationDate);
             Assert.Equal(data.RefreshToken, export.RefreshToken);
         }
     }

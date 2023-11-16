@@ -70,13 +70,13 @@ namespace DG.Common.Http.Authorization.OAuth2
                 return false;
             }
 
-            if (_data.IsValid())
+            if (!_data.IsExpired())
             {
                 return true;
             }
 
             var canRefresh = await RefreshAccessTokenAsync().ConfigureAwait(false);
-            return canRefresh && _data.IsCompleted() && _data.IsValid();
+            return canRefresh && _data.IsCompleted() && !_data.IsExpired();
         }
 
         /// <summary>
@@ -93,7 +93,7 @@ namespace DG.Common.Http.Authorization.OAuth2
                 OAuthRequestNotCompletedException.ThrowForState(_data.State);
             }
 
-            if (!_data.IsValid())
+            if (_data.IsExpired())
             {
                 var canRefresh = await RefreshAccessTokenAsync().ConfigureAwait(false);
                 if (!canRefresh)
@@ -136,7 +136,7 @@ namespace DG.Common.Http.Authorization.OAuth2
         public void Invalidate()
         {
             var newRequest = OAuthData.From(_data);
-            newRequest.ValidUntill = new DateTimeOffset(0, TimeSpan.Zero);
+            newRequest.AccessTokenExpirationDate = new DateTimeOffset(0, TimeSpan.Zero);
             newRequest.RefreshToken = null;
             _data = newRequest;
             OnUpdate?.Invoke(this, UpdateEventArgs.For(_data));
