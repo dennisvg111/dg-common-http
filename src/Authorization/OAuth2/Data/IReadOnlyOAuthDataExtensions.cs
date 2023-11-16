@@ -18,7 +18,7 @@ namespace DG.Common.Http.Authorization.OAuth2.Data
         }
 
         /// <summary>
-        /// Returns a value indicating if the access token for <paramref name="data"/> is expired, based on <see cref="IReadOnlyOAuthData.AccessTokenExpirationDate"/>.
+        /// Returns a value indicating if the access token has expired, based on <see cref="IReadOnlyOAuthData.AccessTokenExpirationDate"/>.
         /// </summary>
         /// <param name="data"></param>
         /// <returns></returns>
