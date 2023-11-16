@@ -32,7 +32,7 @@ namespace DG.Common.Http.Authorization.OAuth2
         /// </summary>
         /// <param name="logic"></param>
         /// <param name="data"></param>
-        public OAuthFlow(IOAuthLogic logic, IReadOnlyOAuthData data)
+        internal OAuthFlow(IOAuthLogic logic, IReadOnlyOAuthData data)
         {
             _logic = logic;
             _data = data;

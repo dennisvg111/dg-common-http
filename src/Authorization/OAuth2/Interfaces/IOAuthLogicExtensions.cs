@@ -38,5 +38,16 @@ namespace DG.Common.Http.Authorization.OAuth2.Interfaces
 
             return new OAuthFlow(oauthLogic, data);
         }
+
+        /// <summary>
+        /// Returns a continuation of an authorization flow with the current <see cref="IOAuthLogic"/>, for the given <paramref name="oauthData"/>
+        /// </summary>
+        /// <param name="oauthLogic"></param>
+        /// <param name="oauthData"></param>
+        /// <returns></returns>
+        public static OAuthFlow ContinueFlow(this IOAuthLogic oauthLogic, OAuthData oauthData)
+        {
+            return new OAuthFlow(oauthLogic, oauthData);
+        }
     }
 }

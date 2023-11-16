@@ -40,7 +40,7 @@ namespace DG.Common.Http.Authorization.OAuth2
             {
                 OAuthFlowNotFoundException.ThrowForState(state);
             }
-            var flow = new OAuthFlow(_logic, data);
+            var flow = _logic.ContinueFlow(data);
             flow.OnUpdate += Flow_OnUpdate;
 
             return flow;
