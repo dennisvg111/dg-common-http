@@ -1,4 +1,5 @@
-﻿using DG.Common.Http.Cookies;
+﻿using DG.Common.Http.Authorization.OAuth2;
+using DG.Common.Http.Cookies;
 using DG.Common.Http.Extensions;
 using Newtonsoft.Json;
 using System;
@@ -125,6 +126,16 @@ namespace DG.Common.Http.Fluent
             var copy = Copy();
             copy._headers.Add(header);
             return copy;
+        }
+
+        /// <summary>
+        /// Returns a copy of this request where the given <see cref="OAuthFlow"/> is used to provide an <c>Authorizaton</c> header.
+        /// </summary>
+        /// <param name="flow"></param>
+        /// <returns></returns>
+        public FluentRequest WithAuthorization(OAuthFlow flow)
+        {
+            return WithHeader(FluentHeader.Authorization(flow));
         }
 
         /// <summary>
