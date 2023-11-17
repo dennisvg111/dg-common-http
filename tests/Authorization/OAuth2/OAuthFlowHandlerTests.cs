@@ -12,9 +12,8 @@ namespace DG.Common.Http.Tests.Authorization.OAuth2
         [Fact]
         public async Task AuthenticationCallback_Calls_Save()
         {
-            var logic = TestOAuthLogic.New();
             var repository = Substitute.For<IOAuthRepository>();
-            var handler = new OAuthFlowHandler(logic, repository);
+            var handler = new OAuthFlowHandler<TestOAuthLogic>(new TestOAuthLogic(), repository);
 
             var flow = handler.StartNewFlow(new string[0], new System.Uri("https://www.test.com"));
             repository.Received(1).Save(Arg.Any<OAuthData>());

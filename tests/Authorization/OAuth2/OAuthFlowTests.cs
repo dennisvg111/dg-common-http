@@ -1,4 +1,5 @@
-﻿using DG.Common.Http.Authorization.OAuth2.Data;
+﻿using DG.Common.Http.Authorization.OAuth2;
+using DG.Common.Http.Authorization.OAuth2.Data;
 using DG.Common.Http.Authorization.OAuth2.Exceptions;
 using DG.Common.Http.Authorization.OAuth2.Interfaces;
 using DG.Common.Http.Fluent;
@@ -18,11 +19,12 @@ namespace DG.Common.Http.Tests.Authorization.OAuth2
             string callbackCode = "callback-code";
             string accessToken = "access-token";
             string refreshToken = "refresh-token";
+
             var logic = Substitute.For<IOAuthLogic>();
             Func<OAuthToken> resultFunc = () => new OAuthToken(accessToken, DateTimeOffset.UtcNow.AddDays(1), refreshToken);
             logic.GetAccessTokenAsync(Arg.Any<OAuthRequest>(), Arg.Is(callbackCode)).Returns(Task.FromResult(resultFunc()));
 
-            var flow = logic.StartNewFlow(new string[0], new Uri("https://www.test.com/callback"));
+            var flow = OAuthFlow.StartNewFor(logic, new string[0], new Uri("https://www.test.com/callback"));
             await flow.AuthorizationCallbackAsync(callbackCode);
             var result = flow.Export();
 
@@ -34,7 +36,6 @@ namespace DG.Common.Http.Tests.Authorization.OAuth2
         [Fact]
         public async Task IsAuthorizedAsync_NotCompleted_ReturnsFalse()
         {
-            var logic = Substitute.For<IOAuthLogic>();
             var data = new OAuthData()
             {
                 State = Guid.NewGuid().ToString(),
@@ -42,7 +43,7 @@ namespace DG.Common.Http.Tests.Authorization.OAuth2
                 CallBackUri = new System.Uri("https://www.test.com"),
                 Started = DateTimeOffset.UtcNow
             };
-            var flow = logic.ContinueFlow(data);
+            var flow = OAuthFlow.Continue<TestOAuthLogic>(data);
 
             var isAuthorized = await flow.IsAuthorizedAsync();
 
@@ -52,7 +53,6 @@ namespace DG.Common.Http.Tests.Authorization.OAuth2
         [Fact]
         public async Task IsAuthorizedAsync_Valid_ReturnsFalse()
         {
-            var logic = Substitute.For<IOAuthLogic>();
             var data = new OAuthData()
             {
                 State = Guid.NewGuid().ToString(),
@@ -63,7 +63,7 @@ namespace DG.Common.Http.Tests.Authorization.OAuth2
                 AccessTokenExpirationDate = DateTimeOffset.UtcNow.AddDays(1),
                 RefreshToken = Guid.NewGuid().ToString()
             };
-            var flow = logic.ContinueFlow(data);
+            var flow = OAuthFlow.Continue<TestOAuthLogic>(data);
 
             var isAuthorized = await flow.IsAuthorizedAsync();
 
@@ -87,7 +87,7 @@ namespace DG.Common.Http.Tests.Authorization.OAuth2
                 AccessTokenExpirationDate = DateTimeOffset.UtcNow.AddDays(-1),
                 RefreshToken = refreshToken
             };
-            var flow = logic.ContinueFlow(data);
+            var flow = OAuthFlow.ContinueFor(logic, data);
 
             var isAuthorized = await flow.IsAuthorizedAsync();
 
@@ -98,7 +98,6 @@ namespace DG.Common.Http.Tests.Authorization.OAuth2
         [Fact]
         public async Task GetAuthorizationHeaderAsync_NewStarted_Throws()
         {
-            var logic = TestOAuthLogic.New();
             var data = new OAuthData()
             {
                 State = Guid.NewGuid().ToString(),
@@ -106,7 +105,7 @@ namespace DG.Common.Http.Tests.Authorization.OAuth2
                 CallBackUri = new System.Uri("https://www.test.com"),
                 Started = DateTimeOffset.UtcNow
             };
-            var flow = logic.ContinueFlow(data);
+            var flow = OAuthFlow.Continue<TestOAuthLogic>(data);
 
             Func<Task<FluentAuthorization>> action = async () => await flow.GetAuthorizationHeaderAsync();
 
@@ -116,7 +115,6 @@ namespace DG.Common.Http.Tests.Authorization.OAuth2
         [Fact]
         public async Task GetAuthorizationHeaderAsync_AuthorizationStopped_Throws()
         {
-            var logic = TestOAuthLogic.New();
             var data = new OAuthData()
             {
                 State = Guid.NewGuid().ToString(),
@@ -127,7 +125,7 @@ namespace DG.Common.Http.Tests.Authorization.OAuth2
                 RefreshToken = Guid.NewGuid().ToString(),
                 AccessTokenExpirationDate = DateTimeOffset.UtcNow.AddHours(-1)
             };
-            var flow = logic.ContinueFlow(data);
+            var flow = OAuthFlow.Continue<TestOAuthLogic>(data);
 
             Func<Task<FluentAuthorization>> action = async () => await flow.GetAuthorizationHeaderAsync();
 
@@ -137,7 +135,6 @@ namespace DG.Common.Http.Tests.Authorization.OAuth2
         [Fact]
         public void Export_ContainsAllData()
         {
-            var logic = Substitute.For<IOAuthLogic>();
             OAuthData data = new OAuthData()
             {
                 State = "request-state",
@@ -149,7 +146,7 @@ namespace DG.Common.Http.Tests.Authorization.OAuth2
                 RefreshToken = "refresh-token"
             };
 
-            var flow = logic.ContinueFlow(data);
+            var flow = OAuthFlow.Continue<TestOAuthLogic>(data);
             var export = flow.Export();
 
             //export should return new instance.

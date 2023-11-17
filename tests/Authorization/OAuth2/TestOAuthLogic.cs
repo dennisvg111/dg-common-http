@@ -9,11 +9,6 @@ namespace DG.Common.Http.Tests.Authorization.OAuth2
 {
     public class TestOAuthLogic : IOAuthLogic
     {
-        public static TestOAuthLogic New()
-        {
-            return new TestOAuthLogic();
-        }
-
         public Uri BuildAuthorizationUri(OAuthRequest request)
         {
             return new UriBuilder("https://authorization.com")

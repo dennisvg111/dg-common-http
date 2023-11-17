@@ -1,4 +1,4 @@
-﻿using DG.Common.Http.Authorization.OAuth2;
+﻿using DG.Common.Http.Authorization;
 using DG.Common.Http.Cookies;
 using DG.Common.Http.Extensions;
 using Newtonsoft.Json;
@@ -129,17 +129,17 @@ namespace DG.Common.Http.Fluent
         }
 
         /// <summary>
-        /// Returns a copy of this request where the given <see cref="OAuthFlow"/> is used to provide an <c>Authorizaton</c> header.
+        /// Returns a copy of this request where the given <see cref="IAuthorizationHeaderProvider"/> is used to provide an <c>Authorizaton</c> header.
         /// </summary>
-        /// <param name="flow"></param>
+        /// <param name="headerProvider"></param>
         /// <returns></returns>
-        public FluentRequest WithAuthorization(OAuthFlow flow)
+        public FluentRequest WithAuthorization(IAuthorizationHeaderProvider headerProvider)
         {
-            return WithHeader(FluentHeader.Authorization(flow));
+            return WithHeader(FluentHeader.Authorization(headerProvider));
         }
 
         /// <summary>
-        /// Returns a copy of this request where the given <see cref="OAuthFlow"/> is used to provide an <c>Authorizaton</c> header.
+        /// Returns a copy of this request where the given <see cref="FluentAuthorization"/> is used to provide an <c>Authorizaton</c> header.
         /// </summary>
         /// <param name="authorization"></param>
         /// <returns></returns>

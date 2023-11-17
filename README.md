@@ -72,16 +72,19 @@ To start using OAuth2 authorization, you first need to implement the four method
    
    This method should create an authorization header value for the given access token.
 
+For ease of use, it is recommended to implement IOAuthLogic in a class that has a public, parameterless constructor.
+
 ### Starting an authorization flow
 Starting an authorization flow can be done using any class that implements IOAuthLogic, like the below example.
 ```cs
-using DG.Common.Http.Authorization.OAuth2.Interfaces;
-
-IOAuthLogic logic = new ExampleImplementation();
 var scopes = new string[] { "user.read", "email.read", "email.send" };
 Uri callbackUri = new Uri("https://www.my-own-app.com/callback");
 
-var flow = logic.StartNewFlow(scopes, callbackUri);
+var flow = OAuthFlow.StartNew<ExampleOAuthLogic>(scopes, callbackUri);
+
+//alternatively, if ExampleOAuthLogic does not have a parameterless constructor
+var logic = new ExampleOAuthLogic(clientId, clientSecret);
+var flow = OAuthFlow.StartNewFor(logic, scopes, callbackUri);
 ```
 
 After receiving the callback code from your callback endpoint, you can continue the authorization flow like this:
@@ -106,5 +109,5 @@ Note that an authorization flow can be interrupted and continued at any time, by
 ```cs
 var data = flow.Export();
 
-OAuthFlow continued = logic.ContinueFlow(data);
+OAuthFlow continued = OAuthFlow.Continue<ExampleOAuthLogic>(data);
 ```
