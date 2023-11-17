@@ -12,14 +12,14 @@ namespace DG.Common.Http.Authorization.OAuth2
     /// <para>Represents the OAuth2 flow for a single authorization request.</para>
     /// <para>Note that this class also implements <see cref="IAuthorizationHeaderProvider"/>.</para>
     /// </summary>
-    public class OAuthFlow : IAuthorizationHeaderProvider
+    public class OAuthFlow<T> : IAuthorizationHeaderProvider where T : IOAuthLogic
     {
         /// <summary>
-        /// An event that gets invoked when this <see cref="OAuthFlow"/> updates the access token.
+        /// An event that gets invoked when this <see cref="OAuthFlow{T}"/> updates the access token.
         /// </summary>
         public event EventHandler<UpdateEventArgs> OnUpdate;
 
-        private readonly IOAuthLogic _logic;
+        private readonly T _logic;
 
         private IReadOnlyOAuthData _data;
 
@@ -29,18 +29,18 @@ namespace DG.Common.Http.Authorization.OAuth2
         public string State => _data.State;
 
         /// <summary>
-        /// Initializes a new instance of <see cref="OAuthFlow"/> for the given <see cref="IOAuthLogic"/>, and with the given <paramref name="data"/>.
+        /// Initializes a new instance of <see cref="OAuthFlow{T}"/> with the given <paramref name="data"/>.
         /// </summary>
         /// <param name="logic"></param>
         /// <param name="data"></param>
-        internal OAuthFlow(IOAuthLogic logic, IReadOnlyOAuthData data)
+        public OAuthFlow(T logic, IReadOnlyOAuthData data)
         {
             _logic = logic;
             _data = data;
         }
 
         /// <summary>
-        /// Returns the authorization url created for this <see cref="OAuthFlow"/>.
+        /// Returns the authorization url created for this <see cref="OAuthFlow{T}"/>.
         /// </summary>
         /// <returns></returns>
         public Uri GetAuthorizationUri()
@@ -60,7 +60,7 @@ namespace DG.Common.Http.Authorization.OAuth2
         }
 
         /// <summary>
-        /// Returns a value indicating if authorization is granted for this <see cref="OAuthFlow"/>.
+        /// Returns a value indicating if authorization is granted for this <see cref="OAuthFlow{T}"/>.
         /// </summary>
         /// <returns></returns>
         public async Task<bool> IsAuthorizedAsync()
@@ -81,7 +81,7 @@ namespace DG.Common.Http.Authorization.OAuth2
         }
 
         /// <summary>
-        /// Returns a new <see cref="FluentAuthorization"/> for this <see cref="OAuthFlow"/>.
+        /// Returns a new <see cref="FluentAuthorization"/> for this <see cref="OAuthFlow{T}"/>.
         /// </summary>
         /// <returns></returns>
         /// <exception cref="OAuthRequestNotCompletedException"></exception>
@@ -168,6 +168,99 @@ namespace DG.Common.Http.Authorization.OAuth2
         {
             var header = SafeSync.Run(() => GetAuthorizationHeaderAsync());
             return header.ToString();
+        }
+    }
+
+    /// <summary>
+    /// Provides methods to create new instances of <see cref="OAuthFlow{T}"/>.
+    /// </summary>
+    public static class OAuthFlow
+    {
+        /// <summary>
+        /// Starts a new authorization flow using <typeparamref name="T"/>.
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public static OAuthFlow<T> StartNew<T>(OAuthRequest request) where T : IOAuthLogic, new()
+        {
+            var data = OAuthData.ForNewRequest(request);
+            var logic = new T();
+
+            return new OAuthFlow<T>(logic, data);
+        }
+
+        /// <summary>
+        /// Starts a new authorization flow using <typeparamref name="T"/>.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="scopes"></param>
+        /// <param name="callBackUri"></param>
+        /// <returns></returns>
+        public static OAuthFlow<T> StartNew<T>(string[] scopes, Uri callBackUri) where T : IOAuthLogic, new()
+        {
+            var request = new OAuthRequest()
+            {
+                State = OAuthState.NewState(),
+                Scopes = scopes,
+                CallBackUri = callBackUri
+            };
+            return StartNew<T>(request);
+        }
+
+        /// <summary>
+        /// Returns a continuation of an authorization flow, using <typeparamref name="T"/>.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        public static OAuthFlow<T> Continue<T>(IReadOnlyOAuthData data) where T : IOAuthLogic, new()
+        {
+            var logic = new T();
+            return new OAuthFlow<T>(logic, data);
+        }
+
+        /// <summary>
+        /// Starts a new authorization flow using the given instance of <paramref name="logic"/>.
+        /// </summary>
+        /// <param name="logic"></param>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public static OAuthFlow<T> StartNewFor<T>(T logic, OAuthRequest request) where T : IOAuthLogic
+        {
+            var data = OAuthData.ForNewRequest(request);
+
+            return new OAuthFlow<T>(logic, data);
+        }
+
+        /// <summary>
+        /// Starts a new authorization flow using the given instance of <paramref name="logic"/>.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="logic"></param>
+        /// <param name="scopes"></param>
+        /// <param name="callBackUri"></param>
+        /// <returns></returns>
+        public static OAuthFlow<T> StartNewFor<T>(T logic, string[] scopes, Uri callBackUri) where T : IOAuthLogic
+        {
+            var request = new OAuthRequest()
+            {
+                State = OAuthState.NewState(),
+                Scopes = scopes,
+                CallBackUri = callBackUri
+            };
+            return StartNewFor(logic, request);
+        }
+
+        /// <summary>
+        /// Returns a continuation of an authorization flow, using the given instance of <paramref name="logic"/>.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="logic"></param>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        public static OAuthFlow<T> ContinueFor<T>(T logic, IReadOnlyOAuthData data) where T : IOAuthLogic
+        {
+            return new OAuthFlow<T>(logic, data);
         }
     }
 }

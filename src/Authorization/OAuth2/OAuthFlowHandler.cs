@@ -9,19 +9,19 @@ namespace DG.Common.Http.Authorization.OAuth2
     /// <para>Provides functionality to authorize using an OAuth2 authorization flow.</para>
     /// <para>Note that this class can handle multiple users authorizing, based on each user having a unique state.</para>
     /// </summary>
-    public class OAuthFlowHandler
+    public class OAuthFlowHandler<T> where T : IOAuthLogic
     {
         private readonly object _repositoryLock = new object();
 
-        private readonly IOAuthLogic _logic;
+        private readonly T _logic;
         private readonly IOAuthRepository _repository;
 
         /// <summary>
-        /// Initializes a new instance of <see cref="OAuthFlowHandler"/> with the given <see cref="IOAuthLogic"/> and <see cref="IOAuthRepository"/>.
+        /// Initializes a new instance of <see cref="OAuthFlowHandler{T}"/> with the given <see cref="IOAuthLogic"/> and <see cref="IOAuthRepository"/>.
         /// </summary>
         /// <param name="logic"></param>
         /// <param name="repository"></param>
-        public OAuthFlowHandler(IOAuthLogic logic, IOAuthRepository repository)
+        public OAuthFlowHandler(T logic, IOAuthRepository repository)
         {
             _logic = logic;
             _repository = repository;
@@ -34,13 +34,13 @@ namespace DG.Common.Http.Authorization.OAuth2
         /// <param name="state"></param>
         /// <returns></returns>
         /// <exception cref="OAuthFlowNotFoundException"></exception>
-        public OAuthFlow ForState(string state)
+        public OAuthFlow<T> ForState(string state)
         {
             if (!_repository.TryGetByState(state, out OAuthData data))
             {
                 OAuthFlowNotFoundException.ThrowForState(state);
             }
-            var flow = _logic.ContinueFlow(data);
+            var flow = OAuthFlow.ContinueFor(_logic, data);
             flow.OnUpdate += Flow_OnUpdate;
 
             return flow;
@@ -49,12 +49,12 @@ namespace DG.Common.Http.Authorization.OAuth2
         /// <summary>
         /// <para>Returns a new authorization flow with a newly generated state value, for the given <paramref name="scopes"/> and <paramref name="callBackUri"/>.</para>
         /// <para>Any updates during this flow will be automatically saved to the given <see cref="IOAuthRepository"/>.</para>
-        /// <para>Note that <see cref="OAuthFlow.State"/> can be used to retrieve this authorization flow using <see cref="ForState(string)"/>, if needed.</para>
+        /// <para>Note that <see cref="OAuthFlow{T}.State"/> can be used to retrieve this authorization flow using <see cref="ForState(string)"/>, if needed.</para>
         /// </summary>
         /// <param name="scopes"></param>
         /// <param name="callBackUri"></param>
         /// <returns></returns>
-        public OAuthFlow StartNewFlow(string[] scopes, Uri callBackUri)
+        public OAuthFlow<T> StartNewFlow(string[] scopes, Uri callBackUri)
         {
             lock (_repositoryLock)
             {
@@ -78,13 +78,13 @@ namespace DG.Common.Http.Authorization.OAuth2
         /// <summary>
         /// <para>Returns a new authorization flow for the given <paramref name="request"/>.</para>
         /// <para>Any updates during this flow will be automatically saved to the given <see cref="IOAuthRepository"/>.</para>
-        /// <para>Note that <see cref="OAuthFlow.State"/> can be used to retrieve this authorization flow using <see cref="ForState(string)"/>.</para>
+        /// <para>Note that <see cref="OAuthFlow{T}.State"/> can be used to retrieve this authorization flow using <see cref="ForState(string)"/>.</para>
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public OAuthFlow StartNewFlow(OAuthRequest request)
+        public OAuthFlow<T> StartNewFlow(OAuthRequest request)
         {
-            var flow = _logic.StartNewFlow(request);
+            var flow = OAuthFlow.StartNewFor(_logic, request);
 
             _repository.Save(flow.Export());
             flow.OnUpdate += Flow_OnUpdate;
@@ -98,23 +98,13 @@ namespace DG.Common.Http.Authorization.OAuth2
         }
 
         /// <summary>
-        /// Starts constructing a new instance of <see cref="OAuthFlowHandler"/> with the given <paramref name="logic"/>.
-        /// </summary>
-        /// <param name="logic"></param>
-        /// <returns></returns>
-        public static OAuthFlowHandlerBuilder With(IOAuthLogic logic)
-        {
-            return new OAuthFlowHandlerBuilder(logic);
-        }
-
-        /// <summary>
         /// Used to construct new instances of <see cref="OAuthFlowHandler"/>.
         /// </summary>
         public class OAuthFlowHandlerBuilder
         {
-            private readonly IOAuthLogic _logic;
+            private readonly T _logic;
 
-            internal OAuthFlowHandlerBuilder(IOAuthLogic logic)
+            internal OAuthFlowHandlerBuilder(T logic)
             {
                 _logic = logic;
             }
@@ -124,19 +114,47 @@ namespace DG.Common.Http.Authorization.OAuth2
             /// </summary>
             /// <param name="repository"></param>
             /// <returns></returns>
-            public OAuthFlowHandler AndWith(IOAuthRepository repository)
+            public OAuthFlowHandler<T> AndWith(IOAuthRepository repository)
             {
-                return new OAuthFlowHandler(_logic, repository);
+                return new OAuthFlowHandler<T>(_logic, repository);
             }
 
             /// <summary>
             /// Returns a new instance of <see cref="OAuthFlowHandler"/> with the previously given <see cref="IOAuthLogic"/> and <see cref="OAuthMemoryRepository.Instance"/> as repository.
             /// </summary>
             /// <returns></returns>
-            public OAuthFlowHandler AndInMemoryRepository()
+            public OAuthFlowHandler<T> AndInMemoryRepository()
             {
-                return new OAuthFlowHandler(_logic, OAuthMemoryRepository.Instance);
+                return new OAuthFlowHandler<T>(_logic, OAuthMemoryRepository.Instance);
             }
+        }
+    }
+
+    /// <summary>
+    /// Provides methods for creating a new instance of <see cref="OAuthFlowHandler{T}"/>
+    /// </summary>
+    public static class OAuthFlowHandler
+    {
+        /// <summary>
+        /// Starts constructing a new instance of <see cref="OAuthFlowHandler"/> with the given <paramref name="logic"/>.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="logic"></param>
+        /// <returns></returns>
+        public static OAuthFlowHandler<T>.OAuthFlowHandlerBuilder With<T>(T logic) where T : IOAuthLogic
+        {
+            return new OAuthFlowHandler<T>.OAuthFlowHandlerBuilder(logic);
+        }
+
+        /// <summary>
+        /// Starts constructing a new instance of <see cref="OAuthFlowHandler"/> with a new instance of <typeparamref name="T"/>.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public static OAuthFlowHandler<T>.OAuthFlowHandlerBuilder For<T>() where T : IOAuthLogic, new()
+        {
+            var logic = new T();
+            return With(logic);
         }
     }
 }
