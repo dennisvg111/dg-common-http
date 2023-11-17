@@ -80,6 +80,7 @@ Starting an authorization flow can be done using any class that implements IOAut
 var scopes = new string[] { "user.read", "email.read", "email.send" };
 Uri callbackUri = new Uri("https://www.my-own-app.com/callback");
 
+//ExampleOAuthLogic must implement IOAuthLogic, and expose a parameterless constructor
 var flow = OAuthFlow.StartNew<ExampleOAuthLogic>(scopes, callbackUri);
 
 //alternatively, if ExampleOAuthLogic does not have a parameterless constructor
