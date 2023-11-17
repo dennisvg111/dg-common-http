@@ -2,12 +2,12 @@
 using System;
 using System.Text;
 
-namespace DG.Common.Http.Authorization
+namespace DG.Common.Http.Fluent
 {
     /// <summary>
     /// Represents the value for an <c>Authorization</c> header.
     /// </summary>
-    public sealed class AuthorizationHeaderValue
+    public sealed class FluentAuthorization
     {
         private readonly string _scheme;
         private readonly string _credentials;
@@ -42,74 +42,74 @@ namespace DG.Common.Http.Authorization
         }
 
         /// <summary>
-        /// Initializes a new instance of <see cref="AuthorizationHeaderValue"/> with the given scheme and credentials.
+        /// Initializes a new instance of <see cref="FluentAuthorization"/> with the given scheme and credentials.
         /// </summary>
         /// <param name="scheme"></param>
         /// <param name="credentials"></param>
-        public AuthorizationHeaderValue(string scheme, string credentials)
+        public FluentAuthorization(string scheme, string credentials)
         {
             _scheme = scheme;
             _credentials = credentials;
         }
 
         /// <summary>
-        /// Initializes a new instance of <see cref="AuthorizationHeaderValue"/> with the given scheme and credentials.
+        /// Initializes a new instance of <see cref="FluentAuthorization"/> with the given scheme and credentials.
         /// </summary>
         /// <param name="scheme"></param>
         /// <param name="credentials"></param>
         /// <returns></returns>
-        public static AuthorizationHeaderValue With(string scheme, string credentials)
+        public static FluentAuthorization With(string scheme, string credentials)
         {
-            return new AuthorizationHeaderValue(scheme, credentials);
+            return new FluentAuthorization(scheme, credentials);
         }
 
         /// <summary>
-        /// Initializes a new instance of <see cref="AuthorizationHeaderValue"/> for an authorization header that has no authentication scheme.
+        /// Initializes a new instance of <see cref="FluentAuthorization"/> for an authorization header that has no authentication scheme.
         /// </summary>
         /// <param name="credentials"></param>
         /// <returns></returns>
-        public static AuthorizationHeaderValue WithoutScheme(string credentials)
+        public static FluentAuthorization WithoutScheme(string credentials)
         {
-            return new AuthorizationHeaderValue(null, credentials);
+            return new FluentAuthorization(null, credentials);
         }
 
         /// <summary>
-        /// Returns a new instance of <see cref="AuthorizationHeaderValue"/> for a basic authorization header that has username and password, seperated by a colon and base-64 encoded.
+        /// Returns a new instance of <see cref="FluentAuthorization"/> for a basic authorization header that has username and password, seperated by a colon and base-64 encoded.
         /// </summary>
         /// <param name="username"></param>
         /// <param name="password"></param>
         /// <returns></returns>
-        public static AuthorizationHeaderValue ForBasic(string username, string password)
+        public static FluentAuthorization ForBasic(string username, string password)
         {
             ThrowIf.Parameter.IsNullOrEmpty(username, nameof(username));
             ThrowIf.Parameter.IsNullOrEmpty(password, nameof(password));
             ThrowIf.Parameter.Matches(username, u => u.Contains(":"), nameof(username), "username may not contain a colon.");
             var encoded = Convert.ToBase64String(Encoding.UTF8.GetBytes(username + ":" + password));
-            return new AuthorizationHeaderValue("Basic", encoded);
+            return new FluentAuthorization("Basic", encoded);
         }
 
         /// <summary>
-        /// Returns a new instance of <see cref="AuthorizationHeaderValue"/> for a bearer authorization header that has an <paramref name="accessToken"/>.
+        /// Returns a new instance of <see cref="FluentAuthorization"/> for a bearer authorization header that has an <paramref name="accessToken"/>.
         /// </summary>
         /// <param name="accessToken">An OAuth 2.0 bearer access token</param>
         /// <returns></returns>
-        public static AuthorizationHeaderValue ForBearer(string accessToken)
+        public static FluentAuthorization ForBearer(string accessToken)
         {
-            return new AuthorizationHeaderValue("Bearer", accessToken);
+            return new FluentAuthorization("Bearer", accessToken);
         }
 
         /// <summary>
-        /// Returns a new instance of <see cref="AuthorizationHeaderValue"/> for a Netotiate/NTLM authorization header that has <paramref name="GssApiData"/>.
+        /// Returns a new instance of <see cref="FluentAuthorization"/> for a Netotiate/NTLM authorization header that has <paramref name="GssApiData"/>.
         /// </summary>
         /// <param name="GssApiData">GSSAPI data</param>
         /// <returns></returns>
-        public static AuthorizationHeaderValue ForNegotiate(string GssApiData)
+        public static FluentAuthorization ForNegotiate(string GssApiData)
         {
-            return new AuthorizationHeaderValue("Negotiate", GssApiData);
+            return new FluentAuthorization("Negotiate", GssApiData);
         }
 
         /// <summary>
-        /// Returns a new instance of <see cref="AuthorizationHeaderValue"/> for an Amazon AWS4-HMAC-SHA256 authorization header that has a <paramref name="credential"/>, <paramref name="signedHeaders"/> and a <paramref name="signature"/>.
+        /// Returns a new instance of <see cref="FluentAuthorization"/> for an Amazon AWS4-HMAC-SHA256 authorization header that has a <paramref name="credential"/>, <paramref name="signedHeaders"/> and a <paramref name="signature"/>.
         /// </summary>
         /// <param name="credential">
         ///     <para>Your access key ID and the scope information, which includes the date, region, and service that were used to calculate the signature.</para>
@@ -121,13 +121,13 @@ namespace DG.Common.Http.Authorization
         /// </param>
         /// <param name="signature">The 256-bit signature.</param>
         /// <returns></returns>
-        public static AuthorizationHeaderValue ForAws(string credential, string[] signedHeaders, byte[] signature)
+        public static FluentAuthorization ForAws(string credential, string[] signedHeaders, byte[] signature)
         {
             string headerList = string.Join(";", signedHeaders);
             string signatureHex = BitConverter.ToString(signature).Replace("-", "").ToLowerInvariant();
 
             string headerValue = $"Credential={credential},SignedHeaders={headerList},Signature={signatureHex}";
-            return new AuthorizationHeaderValue("AWS4-HMAC-SHA256", headerValue);
+            return new FluentAuthorization("AWS4-HMAC-SHA256", headerValue);
         }
     }
 }

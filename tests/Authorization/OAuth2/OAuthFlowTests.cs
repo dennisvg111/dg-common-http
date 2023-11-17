@@ -1,7 +1,7 @@
-﻿using DG.Common.Http.Authorization;
-using DG.Common.Http.Authorization.OAuth2.Data;
+﻿using DG.Common.Http.Authorization.OAuth2.Data;
 using DG.Common.Http.Authorization.OAuth2.Exceptions;
 using DG.Common.Http.Authorization.OAuth2.Interfaces;
+using DG.Common.Http.Fluent;
 using DG.Common.Threading;
 using NSubstitute;
 using System;
@@ -108,7 +108,7 @@ namespace DG.Common.Http.Tests.Authorization.OAuth2
             };
             var flow = logic.ContinueFlow(data);
 
-            Func<Task<AuthorizationHeaderValue>> action = async () => await flow.GetAuthorizationHeaderAsync();
+            Func<Task<FluentAuthorization>> action = async () => await flow.GetAuthorizationHeaderAsync();
 
             await Assert.ThrowsAnyAsync<OAuthRequestNotCompletedException>(action);
         }
@@ -129,7 +129,7 @@ namespace DG.Common.Http.Tests.Authorization.OAuth2
             };
             var flow = logic.ContinueFlow(data);
 
-            Func<Task<AuthorizationHeaderValue>> action = async () => await flow.GetAuthorizationHeaderAsync();
+            Func<Task<FluentAuthorization>> action = async () => await flow.GetAuthorizationHeaderAsync();
 
             await Assert.ThrowsAnyAsync<OAuthAuthorizationExpiredException>(action);
         }

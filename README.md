@@ -41,7 +41,7 @@ var request = FluentRequest.Post.To("https://www.example.com/login")
   .WithContent(FluentFormContentBuilder
     .With("username", "test")
     .AndWith("password", "MyPassword123#"))
-  .WithHeader(FluentHeader.Authorization("Bearer " + token));
+  .WithAuthorizaton(FluentAuthorization.FromBearer(token));
 
 var response = await client.SendAsync(request);
 ```

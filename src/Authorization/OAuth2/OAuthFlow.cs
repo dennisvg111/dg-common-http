@@ -1,6 +1,7 @@
 ﻿using DG.Common.Http.Authorization.OAuth2.Data;
 using DG.Common.Http.Authorization.OAuth2.Exceptions;
 using DG.Common.Http.Authorization.OAuth2.Interfaces;
+using DG.Common.Http.Fluent;
 using DG.Common.Threading;
 using System;
 using System.Threading.Tasks;
@@ -80,12 +81,12 @@ namespace DG.Common.Http.Authorization.OAuth2
         }
 
         /// <summary>
-        /// Returns a new <see cref="AuthorizationHeaderValue"/> for this <see cref="OAuthFlow"/>.
+        /// Returns a new <see cref="FluentAuthorization"/> for this <see cref="OAuthFlow"/>.
         /// </summary>
         /// <returns></returns>
         /// <exception cref="OAuthRequestNotCompletedException"></exception>
         /// <exception cref="OAuthAuthorizationExpiredException"></exception>
-        public async Task<AuthorizationHeaderValue> GetAuthorizationHeaderAsync()
+        public async Task<FluentAuthorization> GetAuthorizationHeaderAsync()
         {
 
             if (!_data.IsCompleted())

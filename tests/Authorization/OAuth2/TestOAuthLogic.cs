@@ -1,5 +1,4 @@
-﻿using DG.Common.Http.Authorization;
-using DG.Common.Http.Authorization.OAuth2.Data;
+﻿using DG.Common.Http.Authorization.OAuth2.Data;
 using DG.Common.Http.Authorization.OAuth2.Interfaces;
 using DG.Common.Http.Fluent;
 using DG.Common.Threading;
@@ -30,7 +29,7 @@ namespace DG.Common.Http.Tests.Authorization.OAuth2
             return await Task.FromResult(token);
         }
 
-        public AuthorizationHeaderValue GetHeaderForToken(string accessToken)
+        public FluentAuthorization GetHeaderForToken(string accessToken)
         {
             throw new NotImplementedException();
         }
