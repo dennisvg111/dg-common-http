@@ -1,4 +1,5 @@
 ﻿using DG.Common.Http.Authorization.OAuth2.Data;
+using DG.Common.Http.Fluent;
 using DG.Common.Threading;
 using System;
 using System.Threading.Tasks;
@@ -33,10 +34,10 @@ namespace DG.Common.Http.Authorization.OAuth2.Interfaces
         Task<TaskResult<OAuthToken>> TryRefreshTokenAsync(string refreshToken);
 
         /// <summary>
-        /// Returns a new <see cref="AuthorizationHeaderValue"/> for te given <paramref name="accessToken"/>.
+        /// Returns a new <see cref="FluentAuthorization"/> for te given <paramref name="accessToken"/>.
         /// </summary>
         /// <param name="accessToken">The access_token (retreived from <see cref="OAuthToken.AccessToken"/>).</param>
         /// <returns></returns>
-        AuthorizationHeaderValue GetHeaderForToken(string accessToken);
+        FluentAuthorization GetHeaderForToken(string accessToken);
     }
 }
