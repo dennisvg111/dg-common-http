@@ -139,16 +139,6 @@ namespace DG.Common.Http.Fluent
         }
 
         /// <summary>
-        /// Returns a copy of this request where the given <see cref="FluentAuthorization"/> is used to provide an <c>Authorizaton</c> header.
-        /// </summary>
-        /// <param name="authorization"></param>
-        /// <returns></returns>
-        public FluentRequest WithAuthorization(FluentAuthorization authorization)
-        {
-            return WithHeader(FluentHeader.Authorization(authorization));
-        }
-
-        /// <summary>
         /// Returns a copy of this request with the HTTP body and content headers set to the given <paramref name="content"/>.
         /// </summary>
         /// <param name="content"></param>
