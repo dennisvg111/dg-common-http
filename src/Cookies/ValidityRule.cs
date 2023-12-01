@@ -6,6 +6,9 @@ using System.Linq.Expressions;
 
 namespace DG.Common.Http.Cookies
 {
+    /// <summary>
+    /// Represents a rule to determine if a cookie is valid or not.
+    /// </summary>
     public class ValidityRule
     {
         private readonly string _ruleName;
@@ -52,9 +55,9 @@ namespace DG.Common.Http.Cookies
         /// </summary>
         /// <param name="ruleName"></param>
         /// <returns></returns>
-        public static CookieRuleWithoutApplicationCheck WithName(string ruleName)
+        public static ICookieRuleBuilder WithName(string ruleName)
         {
-            return new CookieRuleWithoutApplicationCheck(ruleName);
+            return new CookieRuleBuilder(ruleName);
         }
 
         /// <summary>
@@ -84,43 +87,52 @@ namespace DG.Common.Http.Cookies
         }
 
         /// <summary>
-        /// 
+        /// Defines a builder for a cookie rule, with a given rule name.
         /// </summary>
-        public class CookieRuleWithoutApplicationCheck
+        public interface ICookieRuleBuilder
         {
-            private readonly string _ruleName;
-
-            internal CookieRuleWithoutApplicationCheck(string ruleName)
-            {
-                _ruleName = ruleName;
-            }
-
             /// <summary>
-            /// Sets the condition to check to see if this cookie needs to follow this rule.
+            /// Indicates this rule should only be applied to cookies who match the given <paramref name="condition"/>.
             /// </summary>
             /// <param name="condition"></param>
             /// <returns></returns>
-            public ValidityRule ApplyIf(Expression<Func<ICookieIngredients, bool>> condition)
-            {
-                ThrowIf.Parameter.IsNull(condition, nameof(condition));
-                return new ValidityRule(_ruleName, condition, new List<Func<ICookieIngredients, bool>>());
-            }
+            ValidityRule ApplyIf(Expression<Func<ICookieIngredients, bool>> condition);
 
             /// <summary>
             /// Indicates this rule should only be applied to cookies whose name start with the given <paramref name="prefix"/>.
             /// </summary>
             /// <param name="prefix"></param>
             /// <returns></returns>
+            ValidityRule ApplyIfCookieNameStartsWith(string prefix);
+
+            /// <summary>
+            /// Indicates this rule should be applied to all cookies.
+            /// </summary>
+            /// <returns></returns>
+            ValidityRule ApplyToAllCookies();
+        }
+
+        internal class CookieRuleBuilder : ICookieRuleBuilder
+        {
+            private readonly string _ruleName;
+
+            internal CookieRuleBuilder(string ruleName)
+            {
+                _ruleName = ruleName;
+            }
+
+            public ValidityRule ApplyIf(Expression<Func<ICookieIngredients, bool>> condition)
+            {
+                ThrowIf.Parameter.IsNull(condition, nameof(condition));
+                return new ValidityRule(_ruleName, condition, new List<Func<ICookieIngredients, bool>>());
+            }
+
             public ValidityRule ApplyIfCookieNameStartsWith(string prefix)
             {
                 ThrowIf.Parameter.IsNullOrEmpty(prefix, nameof(prefix));
                 return ApplyIf(c => c.Name.StartsWith(prefix, StringComparison.Ordinal));
             }
 
-            /// <summary>
-            /// Indicates this rule should be applied to all cookies.
-            /// </summary>
-            /// <returns></returns>
             public ValidityRule ApplyToAllCookies()
             {
                 return ApplyIf(c => true);
