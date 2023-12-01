@@ -1,4 +1,5 @@
 ﻿using DG.Common.Http.Fluent;
+using FluentAssertions;
 using System.Net.Http;
 using Xunit;
 
@@ -14,7 +15,7 @@ namespace DG.Common.Http.Tests.Fluent
                 .AndWith("password", "MyPassword123!")
                 .BuildUrlEncodedForm();
 
-            Assert.Equal("application/x-www-form-urlencoded", form.Headers.ContentType.MediaType);
+            form.Headers.ContentType.MediaType.Should().Be("application/x-www-form-urlencoded");
         }
 
         [Fact]
@@ -26,7 +27,7 @@ namespace DG.Common.Http.Tests.Fluent
                 .AndWith("password", "MyPassword123!")
                 .BuildMultipartForm();
 
-            Assert.Equal("multipart/form-data", form.Headers.ContentType.MediaType);
+            form.Headers.ContentType.MediaType.Should().Be("multipart/form-data");
         }
     }
 }

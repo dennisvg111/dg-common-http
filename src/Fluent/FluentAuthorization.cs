@@ -1,4 +1,5 @@
 ﻿using DG.Common.Exceptions;
+using DG.Common.Http.Authorization;
 using System;
 using System.Text;
 
@@ -7,7 +8,7 @@ namespace DG.Common.Http.Fluent
     /// <summary>
     /// Represents the value for an <c>Authorization</c> header.
     /// </summary>
-    public sealed class FluentAuthorization
+    public sealed class FluentAuthorization : IAuthorizationHeaderProvider
     {
         private readonly string _scheme;
         private readonly string _credentials;
@@ -29,7 +30,7 @@ namespace DG.Common.Http.Fluent
         public bool HasScheme => !string.IsNullOrEmpty(_scheme);
 
         /// <summary>
-        /// Returns a string that can be used as the value of an HTTP header.
+        /// Returns a string that can be used as the value of an HTTP <c>Authorization</c> header.
         /// </summary>
         /// <returns></returns>
         public override string ToString()
@@ -128,6 +129,15 @@ namespace DG.Common.Http.Fluent
 
             string headerValue = $"Credential={credential},SignedHeaders={headerList},Signature={signatureHex}";
             return new FluentAuthorization("AWS4-HMAC-SHA256", headerValue);
+        }
+
+        /// <inheritdoc/>
+        bool IAuthorizationHeaderProvider.IsAuthorized => true;
+
+        /// <inheritdoc/>
+        string IAuthorizationHeaderProvider.GetAuthorizationHeaderValue()
+        {
+            return ToString();
         }
     }
 }

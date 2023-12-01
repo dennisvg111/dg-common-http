@@ -1,5 +1,6 @@
 ﻿using DG.Common.Http.Fluent;
 using DG.Common.Http.Testing;
+using FluentAssertions;
 using NSubstitute;
 using System;
 using System.Linq;
@@ -27,7 +28,7 @@ namespace DG.Common.Http.Tests.Fluent
 
             var message = request.MessageForBaseUri(baseUri);
 
-            Assert.Equal(expected, message.RequestUri.ToString());
+            message.RequestUri.Should().Be(new Uri(expected));
         }
 
         [Fact]
@@ -36,8 +37,8 @@ namespace DG.Common.Http.Tests.Fluent
             var request = FluentRequest.Get.To("https://www.test.com")
                 .WithHeader(FluentHeader.ContentLength(10));
 
-            Assert.Single(request.Headers);
-            Assert.Equal("10", request.Headers.Single().Value);
+            request.Headers.Should().ContainSingle();
+            request.Headers.Single().Value.Should().Be("10");
         }
 
         [Fact]
@@ -48,8 +49,18 @@ namespace DG.Common.Http.Tests.Fluent
 
             var secondRequest = originalRequest.WithHeader(FluentHeader.Authorization("bearer 1234"));
 
-            Assert.Equal(2, secondRequest.Headers.Count);
-            Assert.Single(originalRequest.Headers);
+            originalRequest.Headers.Should().ContainSingle();
+            secondRequest.Headers.Should().HaveCount(2);
+        }
+
+        [Fact]
+        public void WithAuthorization_AddsHeader()
+        {
+            var request = FluentRequest.Get.To("https://www.test.com")
+                .WithAuthorization(FluentAuthorization.ForBearer("test"));
+
+            request.Headers.Should().ContainSingle();
+            request.Headers.Single().Value.Should().Be("Bearer test");
         }
 
         [Fact]
@@ -66,8 +77,8 @@ namespace DG.Common.Http.Tests.Fluent
             var responseWithoutHeader = await client.SendAsync(requestWithoutHeader);
             var responseWithHeader = await client.SendAsync(requestWithHeader);
 
-            Assert.Equal(HttpStatusCode.BadRequest, responseWithoutHeader.StatusCode);
-            Assert.Equal(HttpStatusCode.OK, responseWithHeader.StatusCode);
+            responseWithoutHeader.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            responseWithHeader.StatusCode.Should().Be(HttpStatusCode.OK);
         }
 
         [Fact]
@@ -85,8 +96,8 @@ namespace DG.Common.Http.Tests.Fluent
             var responseWithoutHeader = await client.SendAsync(requestWithoutHeader);
             var responseWithHeader = await client.SendAsync(requestWithHeader);
 
-            Assert.Equal(HttpStatusCode.BadRequest, responseWithoutHeader.StatusCode);
-            Assert.Equal(HttpStatusCode.OK, responseWithHeader.StatusCode);
+            responseWithoutHeader.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            responseWithHeader.StatusCode.Should().Be(HttpStatusCode.OK);
         }
     }
 }

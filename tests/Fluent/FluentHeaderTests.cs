@@ -1,4 +1,5 @@
 ﻿using DG.Common.Http.Fluent;
+using FluentAssertions;
 using System;
 using Xunit;
 
@@ -15,9 +16,9 @@ namespace DG.Common.Http.Tests.Fluent
         {
             var header = FluentHeader.ContentRange(startIndex, bytes, totalBytes);
 
-            Assert.Equal("Content-Range", header.Name);
-            Assert.Equal(expected, header.Value);
-            Assert.True(header.IsContentHeader);
+            header.IsContentHeader.Should().BeTrue();
+            header.Name.Should().Be("Content-Range");
+            header.Value.Should().Be(expected);
         }
 
         [Fact]
@@ -25,8 +26,9 @@ namespace DG.Common.Http.Tests.Fluent
         {
             var header = FluentHeader.ContentLength(1024);
 
-            Assert.Equal("Content-Length", header.Name);
-            Assert.True(header.IsContentHeader);
+            header.IsContentHeader.Should().BeTrue();
+            header.Name.Should().Be("Content-Length");
+            header.Value.Should().Be("1024");
         }
 
         [Fact]
@@ -34,27 +36,29 @@ namespace DG.Common.Http.Tests.Fluent
         {
             var header = FluentHeader.Authorization("Bearer 1234");
 
-            Assert.Equal("Authorization", header.Name);
-            Assert.False(header.IsContentHeader);
+            header.IsContentHeader.Should().BeFalse();
+            header.Name.Should().Be("Authorization");
+            header.Value.Should().Be("Bearer 1234");
         }
 
         [Fact]
         public void Referrer_CorrectName()
         {
-            //The official standard is misspelled, make sure we have the same spelling.
             var header = FluentHeader.Referrer(new Uri("https://www.test.com"));
 
-            Assert.Equal("Referer", header.Name);
-            Assert.False(header.IsContentHeader);
+            header.IsContentHeader.Should().BeFalse();
+            //The official standard is misspelled, make sure we have the same spelling.
+            header.Name.Should().Be("Referer");
+            header.Value.Should().Be("https://www.test.com/");
         }
 
         [Fact]
         public void DefaultConstructor_ShouldAlwaysApply()
         {
-            var header = new FluentHeader("any", "any");
+            var header = new FluentHeader("Any", "any");
 
-            Assert.True(header.ShouldApply);
-            Assert.False(header.IsContentHeader);
+            header.ShouldApply.Should().BeTrue();
+            header.IsContentHeader.Should().BeFalse();
         }
     }
 }

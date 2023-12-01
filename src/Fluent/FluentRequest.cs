@@ -1,6 +1,7 @@
 ﻿using DG.Common.Http.Authorization;
 using DG.Common.Http.Cookies;
 using DG.Common.Http.Extensions;
+using DG.Common.Http.Fluent.Builder;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -8,6 +9,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace DG.Common.Http.Fluent
 {
@@ -16,6 +18,11 @@ namespace DG.Common.Http.Fluent
     /// </summary>
     public class FluentRequest
     {
+        // We assume redirects and cookies are managed by the request itself.
+        private static readonly HttpClientSettings _defaultClientSettings = HttpClientSettings.WithoutBaseAddress()
+            .WithoutRedirects()
+            .WithoutCookies();
+
         private readonly HttpMethod _method;
         private readonly Uri _uri;
 
@@ -136,16 +143,6 @@ namespace DG.Common.Http.Fluent
         public FluentRequest WithAuthorization(IAuthorizationHeaderProvider headerProvider)
         {
             return WithHeader(FluentHeader.Authorization(headerProvider));
-        }
-
-        /// <summary>
-        /// Returns a copy of this request where the given <see cref="FluentAuthorization"/> is used to provide an <c>Authorizaton</c> header.
-        /// </summary>
-        /// <param name="authorization"></param>
-        /// <returns></returns>
-        public FluentRequest WithAuthorization(FluentAuthorization authorization)
-        {
-            return WithHeader(FluentHeader.Authorization(authorization));
         }
 
         /// <summary>
@@ -276,43 +273,66 @@ namespace DG.Common.Http.Fluent
         }
 
         /// <summary>
+        ///  Send an HTTP request based on the given <see cref="FluentRequest"/> as an asynchronous operation.
+        /// </summary>
+        /// <returns></returns>
+        public async Task<HttpResponseMessage> SendAsync()
+        {
+            var client = HttpClientProvider.ClientForSettings(_defaultClientSettings);
+
+            return await client.SendAsync(this);
+        }
+
+        /// <summary>
+        /// Send an HTTP request based on the given <see cref="FluentRequest"/> as an asynchronous operation, and deserializes the resulting JSON response content to the specified type.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public async Task<T> SendAndDeserializeAsync<T>()
+        {
+            var client = HttpClientProvider.ClientForSettings(_defaultClientSettings);
+
+            return await client.SendAndDeserializeAsync<T>(this);
+        }
+
+        /// <summary>
         /// The GET method requests a representation of the specified resource. Requests using GET should only retrieve data.
         /// </summary>
-        public static FluentRequestMethod Get => FluentRequestMethod.For(HttpMethod.Get);
+        public static IFluentRequestBuilder Get => UnfinishedFluentRequestBuilder.For(HttpMethod.Get);
 
         /// <summary>
         /// The HEAD method asks for a response identical to a <see cref="Get"/> request, but without the response body.
         /// </summary>
-        public static FluentRequestMethod Head => FluentRequestMethod.For(HttpMethod.Head);
+        public static IFluentRequestBuilder Head => UnfinishedFluentRequestBuilder.For(HttpMethod.Head);
 
         /// <summary>
         /// The POST method submits an entity to the specified resource, often causing a change in state or side effects on the server.
         /// </summary>
-        public static FluentRequestMethod Post => FluentRequestMethod.For(HttpMethod.Post);
+        public static IFluentRequestBuilder Post => UnfinishedFluentRequestBuilder.For(HttpMethod.Post);
 
         /// <summary>
         /// The PUT method replaces all current representations of the target resource with the request payload.
         /// </summary>
-        public static FluentRequestMethod Put => FluentRequestMethod.For(HttpMethod.Put);
+        public static IFluentRequestBuilder Put => UnfinishedFluentRequestBuilder.For(HttpMethod.Put);
 
         /// <summary>
         /// The DELETE method deletes the specified resource.
         /// </summary>
-        public static FluentRequestMethod Delete => FluentRequestMethod.For(HttpMethod.Delete);
+        public static IFluentRequestBuilder Delete => UnfinishedFluentRequestBuilder.For(HttpMethod.Delete);
 
         /// <summary>
         /// The PATCH method applies partial modifications to a resource.
         /// </summary>
-        public static FluentRequestMethod Patch => FluentRequestMethod.For(new HttpMethod("PATCH"));
+        public static IFluentRequestBuilder Patch => UnfinishedFluentRequestBuilder.For(new HttpMethod("PATCH"));
 
         /// <summary>
-        /// This function allows for initializing a <see cref="FluentRequest"/> with a non-default HTTP method.
+        /// This function allows for building a <see cref="FluentRequest"/> with a non-default HTTP method.
         /// </summary>
         /// <param name="method"></param>
         /// <returns></returns>
-        public static FluentRequestMethod For(HttpMethod method)
+        public static IFluentRequestBuilder For(HttpMethod method)
         {
-            return FluentRequestMethod.For(method);
+            return UnfinishedFluentRequestBuilder.For(method);
         }
 
         /// <summary>
