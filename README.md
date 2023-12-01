@@ -33,17 +33,13 @@ With this
 
 ```cs
 using DG.Common.Http.Fluent;
-using System.Net.Http;
 
-var client = new HttpClient();
-
-var request = FluentRequest.Post.To("https://www.example.com/login")
+var response = await FluentRequest.Post.To("https://www.example.com/login")
   .WithContent(FluentFormContentBuilder
     .With("username", "test")
     .AndWith("password", "MyPassword123#"))
-  .WithAuthorizaton(FluentAuthorization.FromBearer(token));
-
-var response = await client.SendAsync(request);
+  .WithAuthorizaton(FluentAuthorization.FromBearer(token))
+  .Send();
 ```
 
 ## OAuth authorization
