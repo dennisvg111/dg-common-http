@@ -4,14 +4,14 @@ using System;
 
 namespace DG.Common.Http.Cookies
 {
+    /// <summary>
+    /// Represents a cookie.
+    /// </summary>
     public class Cookie : IComparable<Cookie>
     {
         private readonly ICookieIngredients _base;
         private readonly CookiePath _path;
         private readonly CookieExpiration _expiration;
-
-        private readonly bool _isMarkedHost;
-        private readonly bool _isMarkedSecure;
 
         /// <inheritdoc cref="ICookieIngredients.Name"/>
         public string Name => _base.Name;
@@ -53,11 +53,13 @@ namespace DG.Common.Http.Cookies
             _base = cookieBase;
             _path = new CookiePath(cookieBase);
             _expiration = new CookieExpiration(cookieBase);
-
-            _isMarkedHost = cookieBase.Name.StartsWith("__Host-", StringComparison.Ordinal);
-            _isMarkedSecure = cookieBase.Name.StartsWith("__Secure-", StringComparison.Ordinal);
         }
 
+        /// <summary>
+        /// Returns a value indicating if this cookies applies to the given <see cref="Uri"/>.
+        /// </summary>
+        /// <param name="requestUri"></param>
+        /// <returns></returns>
         public bool AppliesTo(Uri requestUri)
         {
             if (_base.IsSecure && !requestUri.IsSecure())
@@ -67,6 +69,11 @@ namespace DG.Common.Http.Cookies
             return !IsExpired() && _path.IsMatch(requestUri);
         }
 
+        /// <summary>
+        /// Indicates if this cookie is valid. If not <paramref name="reason"/> will contain the reason this cookie is invalid.
+        /// </summary>
+        /// <param name="reason"></param>
+        /// <returns></returns>
         public bool IsValid(out string reason)
         {
             foreach (var rule in CookieRules.Default)
@@ -81,6 +88,11 @@ namespace DG.Common.Http.Cookies
             return true;
         }
 
+        /// <summary>
+        /// Indicates if this cookie is valid according to the given <see cref="ValidityRule"/>.
+        /// </summary>
+        /// <param name="rule"></param>
+        /// <returns></returns>
         public bool IsValidAccordingTo(ValidityRule rule)
         {
             return rule.Check(_base);
@@ -95,6 +107,11 @@ namespace DG.Common.Http.Cookies
             return _expiration.IsExpiredOn(DateTimeOffset.UtcNow);
         }
 
+        /// <summary>
+        /// Compares two cookies, and returns a value if this cookies path is more specific or received before the other cookie.
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
         public int CompareTo(Cookie other)
         {
             int pathComparison = (_base.Path?.Length ?? 0).CompareTo(other._base.Path?.Length ?? 0);

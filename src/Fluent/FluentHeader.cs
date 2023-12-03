@@ -55,13 +55,13 @@ namespace DG.Common.Http.Fluent
 
         /// <summary>
         /// <para>Starts the initialization of a <see cref="FluentHeader"/> for a header with the given name.</para>
-        /// <para>Note this should be followed by calling <see cref="FluentHeaderName.AndValue(string)"/> on the result.</para>
+        /// <para>Note this should be followed by calling <see cref="IFluentHeaderBuilder.AndValue(string)"/> on the result.</para>
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public static FluentHeaderName WithName(string name)
+        public static IFluentHeaderBuilder WithName(string name)
         {
-            return new FluentHeaderName(name);
+            return new FluentHeaderBuilder(name);
         }
 
         /// <summary>
@@ -158,27 +158,33 @@ namespace DG.Common.Http.Fluent
             return $"{Name}: {Value}";
         }
 
-        /// <summary>
-        /// This class is only used to build a <see cref="FluentHeader"/> using <see cref="FluentHeader.WithName(string)"/>, and should not be used directly.
-        /// </summary>
-        public class FluentHeaderName
+
+        internal class FluentHeaderBuilder : IFluentHeaderBuilder
         {
             private readonly string _name;
 
-            internal FluentHeaderName(string name)
+            internal FluentHeaderBuilder(string name)
             {
                 _name = name;
             }
 
+            public FluentHeader AndValue(string value)
+            {
+                return new FluentHeader(_name, value);
+            }
+        }
+
+        /// <summary>
+        /// Defines a way to create an instance of <see cref="FluentHeader"/> when the name is already known.
+        /// </summary>
+        public interface IFluentHeaderBuilder
+        {
             /// <summary>
             /// Initializes a new instance of <see cref="FluentHeader"/> for a header with the previously specified name and the given <paramref name="value"/>.
             /// </summary>
             /// <param name="value"></param>
             /// <returns></returns>
-            public FluentHeader AndValue(string value)
-            {
-                return new FluentHeader(_name, value);
-            }
+            FluentHeader AndValue(string value);
         }
     }
 }

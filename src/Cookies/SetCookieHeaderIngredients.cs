@@ -81,7 +81,7 @@ namespace DG.Common.Http.Cookies
                 cookie = null;
                 return false;
             }
-            var properties = HeaderProperty.ParseList(headerValue);
+            var properties = HeaderValuePart.ParseList(headerValue);
             if (properties == null || properties.Length == 0 || (properties[0].Name?.Length ?? 0) == 0)
             {
                 cookie = null;
@@ -94,7 +94,7 @@ namespace DG.Common.Http.Cookies
             return true;
         }
 
-        private void ParseAdditionalProperties(HeaderProperty[] properties)
+        private void ParseAdditionalProperties(HeaderValuePart[] properties)
         {
             if (properties.TryGet("Domain", out string domain))
             {

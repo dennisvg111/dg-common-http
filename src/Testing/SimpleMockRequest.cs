@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using DG.Common.Http.Fluent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 
@@ -12,8 +13,8 @@ namespace DG.Common.Http.Testing
         private readonly string _url;
         private readonly HttpMethod _method = HttpMethod.Get;
         private readonly string _content = string.Empty;
-        private readonly Dictionary<string, SimpleMockHeader> _headers = new Dictionary<string, SimpleMockHeader>();
-        private readonly Dictionary<string, SimpleMockHeader> _contentHeaders = new Dictionary<string, SimpleMockHeader>();
+        private readonly Dictionary<string, FluentHeader> _headers = new Dictionary<string, FluentHeader>();
+        private readonly Dictionary<string, FluentHeader> _contentHeaders = new Dictionary<string, FluentHeader>();
 
         /// <summary>
         /// The url for this request.
@@ -33,14 +34,14 @@ namespace DG.Common.Http.Testing
         /// <summary>
         /// The headers for this request.
         /// </summary>
-        public IReadOnlyDictionary<string, SimpleMockHeader> Headers => _headers;
+        public IReadOnlyDictionary<string, FluentHeader> Headers => _headers;
 
         /// <summary>
         /// The headers for the content of this request.
         /// </summary>
-        public IReadOnlyDictionary<string, SimpleMockHeader> ContentHeaders => _contentHeaders;
+        public IReadOnlyDictionary<string, FluentHeader> ContentHeaders => _contentHeaders;
 
-        internal SimpleMockRequest(string url, HttpMethod method, string content, IEnumerable<SimpleMockHeader> headers, IEnumerable<SimpleMockHeader> contentHeaders)
+        internal SimpleMockRequest(string url, HttpMethod method, string content, IEnumerable<FluentHeader> headers, IEnumerable<FluentHeader> contentHeaders)
         {
             _url = url;
             _method = method;
