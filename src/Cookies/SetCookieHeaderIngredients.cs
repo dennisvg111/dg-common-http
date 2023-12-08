@@ -1,5 +1,6 @@
 ﻿using DG.Common.Http.Headers;
 using System;
+using System.Globalization;
 using System.Linq;
 
 namespace DG.Common.Http.Cookies
@@ -118,7 +119,7 @@ namespace DG.Common.Http.Cookies
                 _policy = policy;
             }
 
-            if (properties.TryGet("Expires", out string expiresString) && DateTimeOffset.TryParse(expiresString, out DateTimeOffset expires))
+            if (properties.TryGet("Expires", out string expiresString) && DateTimeOffset.TryParse(expiresString, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTimeOffset expires))
             {
                 _expires = expires;
             }

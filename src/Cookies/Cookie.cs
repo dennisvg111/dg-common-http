@@ -11,7 +11,6 @@ namespace DG.Common.Http.Cookies
     {
         private readonly ICookieIngredients _base;
         private readonly CookiePath _path;
-        private readonly CookieExpiration _expiration;
 
         /// <inheritdoc cref="ICookieIngredients.Name"/>
         public string Name => _base.Name;
@@ -52,7 +51,6 @@ namespace DG.Common.Http.Cookies
 
             _base = cookieBase;
             _path = new CookiePath(cookieBase);
-            _expiration = new CookieExpiration(cookieBase);
         }
 
         /// <summary>
@@ -66,7 +64,7 @@ namespace DG.Common.Http.Cookies
             {
                 return false;
             }
-            return !IsExpired() && _path.IsMatch(requestUri);
+            return !_base.IsExpiredOn(DateTimeOffset.UtcNow) && _path.IsMatch(requestUri);
         }
 
         /// <summary>
@@ -78,7 +76,7 @@ namespace DG.Common.Http.Cookies
         {
             foreach (var rule in CookieRules.Default)
             {
-                if (!IsValidAccordingTo(rule))
+                if (!rule.Check(_base))
                 {
                     reason = rule.Name;
                     return false;
@@ -104,7 +102,7 @@ namespace DG.Common.Http.Cookies
         /// <returns></returns>
         public bool IsExpired()
         {
-            return _expiration.IsExpiredOn(DateTimeOffset.UtcNow);
+            return _base.IsExpiredOn(DateTimeOffset.UtcNow);
         }
 
         /// <summary>

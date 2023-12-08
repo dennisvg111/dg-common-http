@@ -1,5 +1,6 @@
 ﻿using DG.Common.Http.Cookies;
 using DG.Common.Http.Extensions;
+using FluentAssertions;
 using System;
 using Xunit;
 
@@ -35,12 +36,13 @@ namespace DG.Common.Http.Tests.Cookies
             string cookieExpires = expirationDate.ToCookieExpiresString();
             string headerValue = $"id=a3fWa; Expires={cookieExpires}";
 
-            Assert.True(Cookie.TryParse(headerValue, expirationDate.AddDays(-1), _defaultOriginUri, out Cookie cookie));
+            bool canParse = Cookie.TryParse(headerValue, expirationDate.AddDays(-1), _defaultOriginUri, out Cookie cookie);
 
-            Assert.Equal("id", cookie.Name);
-            Assert.Equal("a3fWa", cookie.Value);
-            Assert.True(cookie.IsExpired() == isExpired, $"cookie.{nameof(isExpired)}() should return {isExpired}.");
-            Assert.False(cookie.IsSessionCookie, "Cookie should not be marked as session cookie.");
+            canParse.Should().BeTrue();
+            cookie.Name.Should().Be("id");
+            cookie.Value.Should().Be("a3fWa");
+            cookie.IsExpired().Should().Be(isExpired);
+            cookie.IsSessionCookie.Should().BeFalse();
         }
 
         public static object[][] MaxAgeData = new object[][]
