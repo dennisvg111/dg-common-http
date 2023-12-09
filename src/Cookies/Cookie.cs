@@ -19,26 +19,6 @@ namespace DG.Common.Http.Cookies
         public string Value => _base.Value;
 
         /// <summary>
-        /// Indicates if this is a session cookie.
-        /// </summary>
-        public bool IsSessionCookie => !_expiration.HasExpiration;
-
-        /// <summary>
-        /// Generates a key based on name and path used by the <see cref="CookieJar"/> to identify cookies when adding or replacing cookies.
-        /// </summary>
-        /// <returns></returns>
-        public string GenerateKey()
-        {
-            var domain = string.IsNullOrEmpty(_base.Domain) ? "*" + _base.OriginUri.Host : _base.Domain;
-            var path = string.IsNullOrEmpty(_base.Path) ? _base.OriginUri.AbsolutePath : _base.Path;
-            if (path.Length == 0)
-            {
-                path = "/";
-            }
-            return $"{domain}{path}[{_base.Name}]";
-        }
-
-        /// <summary>
         /// Initializes a new instance of <see cref="Cookie"/> using the given cookie properties.
         /// </summary>
         /// <param name="cookieBase"></param>
@@ -84,50 +64,6 @@ namespace DG.Common.Http.Cookies
             }
             reason = string.Empty;
             return true;
-        }
-
-        /// <summary>
-        /// Indicates if this cookie is valid according to the given <see cref="ValidityRule"/>.
-        /// </summary>
-        /// <param name="rule"></param>
-        /// <returns></returns>
-        public bool IsValidAccordingTo(ValidityRule rule)
-        {
-            return rule.Check(_base);
-        }
-
-        /// <summary>
-        /// Indicates that the cookie is expired, and thus should be removed.
-        /// </summary>
-        /// <returns></returns>
-        public bool IsExpired()
-        {
-            return _base.IsExpiredOn(DateTimeOffset.UtcNow);
-        }
-
-        /// <summary>
-        /// Compares two cookies, and returns a value if this cookies path is more specific or received before the other cookie.
-        /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
-        public int CompareTo(Cookie other)
-        {
-            int pathComparison = (_base.Path?.Length ?? 0).CompareTo(other._base.Path?.Length ?? 0);
-            if (pathComparison != 0)
-            {
-                //longest first.
-                return -pathComparison;
-            }
-            return _base.ReceivedDate.CompareTo(other._base.ReceivedDate);
-        }
-
-        /// <summary>
-        /// Converts this cookie to a string representation in the format <c>name=value</c>.
-        /// </summary>
-        /// <returns></returns>
-        public override string ToString()
-        {
-            return $"{_base.Name}={_base.Value}";
         }
 
         /// <summary>

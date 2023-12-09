@@ -13,6 +13,8 @@ namespace DG.Common.Http.Cookies
     /// </summary>
     public class CookieJar
     {
+        private readonly static CookieComparer _cookieComparer = new CookieComparer();
+
         private readonly ConcurrentDictionary<string, Cookie> _cookies = new ConcurrentDictionary<string, Cookie>();
 
         /// <summary>
@@ -57,7 +59,7 @@ namespace DG.Common.Http.Cookies
                 cookieBuilder.Append(values.First());
             }
             bool replaceNeeded = false;
-            foreach (var cookie in _cookies.Values.OrderBy(c => c))
+            foreach (ICookieIngredients cookie in _cookies.Values.OrderBy(c => c, _cookieComparer))
             {
                 if (!cookie.AppliesTo(uri))
                 {
@@ -68,7 +70,7 @@ namespace DG.Common.Http.Cookies
                 {
                     cookieBuilder.Append("; ");
                 }
-                cookieBuilder.Append(cookie);
+                cookieBuilder.Append(cookie.ToCookieHeaderString());
             }
             if (replaceNeeded)
             {
