@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace DG.Common.Http.Headers
 {
-    public class HeaderProperty
+    internal class HeaderValuePart
     {
         private readonly string _name;
         private readonly string _value;
@@ -11,7 +11,7 @@ namespace DG.Common.Http.Headers
         public string Name => _name;
         public string Value => _value;
 
-        public HeaderProperty(string name, string value)
+        public HeaderValuePart(string name, string value)
         {
             _name = name;
             _value = value;
@@ -22,21 +22,21 @@ namespace DG.Common.Http.Headers
             return _name != null && _name.Equals(name, StringComparison.OrdinalIgnoreCase);
         }
 
-        public static HeaderProperty Parse(string header)
+        public static HeaderValuePart Parse(string header)
         {
             int index = header.IndexOf('=');
             if (index <= 0)
             {
-                return new HeaderProperty(header.Substring(index < 0 ? 0 : 1).Trim(), string.Empty);
+                return new HeaderValuePart(header.Substring(index < 0 ? 0 : 1).Trim(), string.Empty);
             }
             if (index == header.Length - 1)
             {
-                return new HeaderProperty(header.Substring(0, header.Length - 1).Trim(), string.Empty);
+                return new HeaderValuePart(header.Substring(0, header.Length - 1).Trim(), string.Empty);
             }
-            return new HeaderProperty(header.Substring(0, index).Trim(), header.Substring(index + 1).Trim());
+            return new HeaderValuePart(header.Substring(0, index).Trim(), header.Substring(index + 1).Trim());
         }
 
-        public static HeaderProperty[] ParseList(string header)
+        public static HeaderValuePart[] ParseList(string header)
         {
             return header.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
                 .Select(p => Parse(p))

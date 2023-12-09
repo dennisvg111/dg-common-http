@@ -2,7 +2,10 @@
 
 namespace DG.Common.Http.Cookies
 {
-    public class CookiePath
+    /// <summary>
+    /// Represents the uri data of a cookie, based on <see cref="ICookie.Path"/>, <see cref="ICookie.Domain"/>, and <see cref="ICookie.OriginUri"/>.
+    /// </summary>
+    public class CookieUriData
     {
         private readonly Uri _originUri;
         private readonly string _trimmedDomain;
@@ -10,12 +13,16 @@ namespace DG.Common.Http.Cookies
 
         private readonly Lazy<string> _matchPath;
 
-        public CookiePath(ICookieIngredients cookieDough)
+        /// <summary>
+        /// Initializes a new instance of <see cref="CookieUriData"/> based on the given <see cref="ICookie"/>.
+        /// </summary>
+        /// <param name="cookie"></param>
+        public CookieUriData(ICookie cookie)
         {
-            _originUri = cookieDough.OriginUri;
-            _path = cookieDough.Path;
+            _originUri = cookie.OriginUri;
+            _path = cookie.Path;
 
-            _trimmedDomain = cookieDough.Domain;
+            _trimmedDomain = cookie.Domain;
             if (_trimmedDomain?.StartsWith(".", StringComparison.Ordinal) ?? false)
             {
                 _trimmedDomain = _trimmedDomain.Substring(1);
@@ -24,11 +31,21 @@ namespace DG.Common.Http.Cookies
             _matchPath = new Lazy<string>(() => GetMatchPath());
         }
 
+        /// <summary>
+        /// Returns a value indicating if this <see cref="CookieUriData"/> matches <paramref name="requestUri"/>.
+        /// </summary>
+        /// <param name="requestUri"></param>
+        /// <returns></returns>
         public bool IsMatch(Uri requestUri)
         {
             return IsDomainMatch(requestUri) && IsPathMatch(requestUri);
         }
 
+        /// <summary>
+        /// Returns a value indicating if the domain part of this <see cref="CookieUriData"/> matches <paramref name="requestUri"/>.
+        /// </summary>
+        /// <param name="requestUri"></param>
+        /// <returns></returns>
         public bool IsDomainMatch(Uri requestUri)
         {
             if (string.IsNullOrEmpty(_trimmedDomain))
@@ -47,6 +64,11 @@ namespace DG.Common.Http.Cookies
             return false;
         }
 
+        /// <summary>
+        /// Returns a value indicating if the path part of this <see cref="CookieUriData"/> matches <paramref name="requestUri"/>.
+        /// </summary>
+        /// <param name="requestUri"></param>
+        /// <returns></returns>
         public bool IsPathMatch(Uri requestUri)
         {
             var cookiePath = _matchPath.Value;

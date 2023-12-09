@@ -1,13 +1,14 @@
 ﻿using DG.Common.Http.Headers;
 using System;
+using System.Globalization;
 using System.Linq;
 
 namespace DG.Common.Http.Cookies
 {
     /// <summary>
-    /// This class represents the read-only information from a Set-Cookie header, to be used in a <see cref="Cookie"/>.
+    /// This class represents the read-only information from a Set-Cookie header, to be used in a <see cref="CookieWrapper"/>.
     /// </summary>
-    internal class SetCookieHeaderIngredients : ICookieIngredients
+    internal class ReadOnlyCookie : ICookie
     {
         private readonly string _name;
 
@@ -58,7 +59,7 @@ namespace DG.Common.Http.Cookies
         /// <inheritdoc/>
         public int? MaxAge => _maxAge;
 
-        private SetCookieHeaderIngredients(string name, string value, Uri originUri, DateTimeOffset receivedDate)
+        private ReadOnlyCookie(string name, string value, Uri originUri, DateTimeOffset receivedDate)
         {
             _name = name;
             _value = value;
@@ -67,34 +68,34 @@ namespace DG.Common.Http.Cookies
         }
 
         /// <summary>
-        /// Parses a HTTP Set-Cookie header value to an instance of <see cref="Cookie"/>, and returns a value indicating if parsing succeeded.
+        /// Parses a HTTP Set-Cookie header value to an instance of <see cref="CookieWrapper"/>, and returns a value indicating if parsing succeeded.
         /// </summary>
         /// <param name="headerValue"></param>
         /// <param name="receievedDate"></param>
         /// <param name="originUri"></param>
         /// <param name="cookie"></param>
         /// <returns></returns>
-        public static bool TryParse(string headerValue, DateTimeOffset receievedDate, Uri originUri, out SetCookieHeaderIngredients cookie)
+        public static bool TryParse(string headerValue, DateTimeOffset receievedDate, Uri originUri, out ReadOnlyCookie cookie)
         {
             if (!headerValue.Contains("="))
             {
                 cookie = null;
                 return false;
             }
-            var properties = HeaderProperty.ParseList(headerValue);
+            var properties = HeaderValuePart.ParseList(headerValue);
             if (properties == null || properties.Length == 0 || (properties[0].Name?.Length ?? 0) == 0)
             {
                 cookie = null;
                 return false;
             }
-            cookie = new SetCookieHeaderIngredients(properties[0].Name, properties[0].Value, originUri, receievedDate);
+            cookie = new ReadOnlyCookie(properties[0].Name, properties[0].Value, originUri, receievedDate);
 
             properties = properties.Skip(1).ToArray();
             cookie.ParseAdditionalProperties(properties);
             return true;
         }
 
-        private void ParseAdditionalProperties(HeaderProperty[] properties)
+        private void ParseAdditionalProperties(HeaderValuePart[] properties)
         {
             if (properties.TryGet("Domain", out string domain))
             {
@@ -118,7 +119,7 @@ namespace DG.Common.Http.Cookies
                 _policy = policy;
             }
 
-            if (properties.TryGet("Expires", out string expiresString) && DateTimeOffset.TryParse(expiresString, out DateTimeOffset expires))
+            if (properties.TryGet("Expires", out string expiresString) && DateTimeOffset.TryParse(expiresString, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTimeOffset expires))
             {
                 _expires = expires;
             }

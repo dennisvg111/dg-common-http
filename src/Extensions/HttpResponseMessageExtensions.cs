@@ -4,6 +4,9 @@ using System.Net.Http;
 
 namespace DG.Common.Http.Extensions
 {
+    /// <summary>
+    /// Provides extension methods for an <see cref="HttpResponseMessage"/>.
+    /// </summary>
     public static class HttpResponseMessageExtensions
     {
         private static readonly HttpStatusCode[] _redirectCodes = new[] { (HttpStatusCode)301, (HttpStatusCode)302, (HttpStatusCode)303, (HttpStatusCode)307, (HttpStatusCode)308 };

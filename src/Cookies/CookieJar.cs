@@ -13,7 +13,22 @@ namespace DG.Common.Http.Cookies
     /// </summary>
     public class CookieJar
     {
-        private readonly ConcurrentDictionary<string, Cookie> _cookies = new ConcurrentDictionary<string, Cookie>();
+        private readonly static ICookieComparer _cookieComparer = new ICookieComparer();
+
+        private readonly bool _rejectInvalidCookies = true;
+        private readonly ConcurrentDictionary<string, CookieWrapper> _cookies = new ConcurrentDictionary<string, CookieWrapper>();
+
+        /// <summary>
+        /// <para>Initializes a new instance of <see cref="CookieJar"/>.</para>
+        /// <para>If <paramref name="rejectInvalidCookies"/> is <see langword="true"/>, cookies will only be added to this jar during <see cref="CollectFrom(HttpResponseMessage)"/> if they are valid according to <see cref="CookieRules.Default"/>.</para>
+        /// </summary>
+        /// <param name="rejectInvalidCookies"></param>
+        public CookieJar(bool rejectInvalidCookies = true)
+        {
+            _rejectInvalidCookies = rejectInvalidCookies;
+        }
+
+
 
         /// <summary>
         /// Updates the cookies contained in this <see cref="CookieJar"/> based on the <c>Set-Cookie</c> header given response.
@@ -30,17 +45,21 @@ namespace DG.Common.Http.Cookies
 
             foreach (var headerValue in cookieHeaderValues)
             {
-                if (!Cookie.TryParse(headerValue, receivedDate, requestUri, out Cookie cookie))
+                if (!Cookie.TryParse(headerValue, receivedDate, requestUri, out ICookie cookie))
+                {
+                    continue;
+                }
+                if (_rejectInvalidCookies && !cookie.IsValid())
                 {
                     continue;
                 }
                 string key = cookie.GenerateKey();
                 if (cookie.IsExpired())
                 {
-                    _cookies.TryRemove(key, out Cookie _);
+                    _cookies.TryRemove(key, out CookieWrapper _);
                     continue;
                 }
-                _cookies[key] = cookie;
+                _cookies[key] = new CookieWrapper(cookie);
             }
         }
 
@@ -57,18 +76,20 @@ namespace DG.Common.Http.Cookies
                 cookieBuilder.Append(values.First());
             }
             bool replaceNeeded = false;
-            foreach (var cookie in _cookies.Values.OrderBy(c => c))
+
+            foreach (var wrapper in _cookies.Values.OrderBy(c => c.Cookie, _cookieComparer))
             {
-                if (!cookie.AppliesTo(uri))
+                if (!wrapper.AppliesTo(uri))
                 {
                     continue;
                 }
+
                 replaceNeeded = true;
                 if (cookieBuilder.Length > 0)
                 {
                     cookieBuilder.Append("; ");
                 }
-                cookieBuilder.Append(cookie);
+                cookieBuilder.Append(wrapper.Cookie.ToCookieHeaderString());
             }
             if (replaceNeeded)
             {

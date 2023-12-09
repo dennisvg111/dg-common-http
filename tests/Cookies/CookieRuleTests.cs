@@ -15,7 +15,7 @@ namespace DG.Common.Http.Tests.Cookies
             string headerValue = $"qwerty=219ffwef9w0f; Domain=somecompany.co.uk";
             Uri origin = new Uri("https://originalcompany.com", UriKind.Absolute);
 
-            Assert.True(Cookie.TryParse(headerValue, _received, origin, out Cookie cookie));
+            Assert.True(Cookie.TryParse(headerValue, _received, origin, out ICookie cookie));
 
             Assert.False(cookie.IsValid(out string reason));
             Assert.Contains("domain", reason, StringComparison.OrdinalIgnoreCase);
@@ -26,7 +26,7 @@ namespace DG.Common.Http.Tests.Cookies
         {
             string headerValue = $"qwerty=219ffwef9w0f; Domain=example.com/path";
 
-            Assert.True(Cookie.TryParse(headerValue, _received, _defaultOriginUri, out Cookie cookie));
+            Assert.True(Cookie.TryParse(headerValue, _received, _defaultOriginUri, out ICookie cookie));
 
             Assert.False(cookie.IsValid(out string reason));
             Assert.Contains("domain", reason, StringComparison.OrdinalIgnoreCase);
@@ -38,7 +38,7 @@ namespace DG.Common.Http.Tests.Cookies
             string headerValue = $"sessionId=e8bb43229de9; Domain=foo.example.com";
             Uri origin = new Uri("https://example.com", UriKind.Absolute);
 
-            Assert.True(Cookie.TryParse(headerValue, _received, origin, out Cookie cookie));
+            Assert.True(Cookie.TryParse(headerValue, _received, origin, out ICookie cookie));
 
             Assert.False(cookie.IsValid(out string reason));
             Assert.Contains("domain", reason, StringComparison.OrdinalIgnoreCase);
@@ -50,7 +50,7 @@ namespace DG.Common.Http.Tests.Cookies
             string headerValue = $"qwerty=219ffwef9w0f; Domain=.com";
             Uri origin = new Uri("https://originalcompany.com", UriKind.Absolute);
 
-            Assert.True(Cookie.TryParse(headerValue, _received, origin, out Cookie cookie));
+            Assert.True(Cookie.TryParse(headerValue, _received, origin, out ICookie cookie));
 
             Assert.False(cookie.IsValid(out string reason));
             Assert.Contains("domain", reason, StringComparison.OrdinalIgnoreCase);
@@ -62,7 +62,7 @@ namespace DG.Common.Http.Tests.Cookies
             string headerValue = $"ip=test; Domain=192.168.127.108";
             Uri origin = new Uri("http://192.168.127.108", UriKind.Absolute);
 
-            Assert.True(Cookie.TryParse(headerValue, _received, origin, out Cookie cookie));
+            Assert.True(Cookie.TryParse(headerValue, _received, origin, out ICookie cookie));
 
             Assert.False(cookie.IsValid(out string reason));
             Assert.Contains("IP address", reason, StringComparison.OrdinalIgnoreCase);
@@ -83,7 +83,7 @@ namespace DG.Common.Http.Tests.Cookies
                 headerValue += "; Secure";
             }
 
-            Assert.True(Cookie.TryParse(headerValue, _received, _defaultOriginUri, out Cookie cookie));
+            Assert.True(Cookie.TryParse(headerValue, _received, _defaultOriginUri, out ICookie cookie));
 
             var actual = cookie.IsValid(out string reason);
             Assert.True(actual == expected, $"Cookie should{(expected ? "" : " not")} be validated.");
@@ -104,7 +104,7 @@ namespace DG.Common.Http.Tests.Cookies
         [InlineData("__Host-cookie=test; Secure; Domain=.example.com; Path=/test", false)]
         public void IsValid_HostPrefix(string headerValue, bool expectedIsValid)
         {
-            Assert.True(Cookie.TryParse(headerValue, _received, _defaultOriginUri, out Cookie cookie));
+            Assert.True(Cookie.TryParse(headerValue, _received, _defaultOriginUri, out ICookie cookie));
 
             var actual = cookie.IsValid(out string reason);
             Assert.True(actual == expectedIsValid, $"Cookie should{(expectedIsValid ? "" : " not")} be validated.");
@@ -124,7 +124,7 @@ namespace DG.Common.Http.Tests.Cookies
         [InlineData("__Secure-cookie=test; Domain=.example.com; Path=/", false)]
         public void IsValid_SecurePrefix(string headerValue, bool expectedIsValid)
         {
-            Assert.True(Cookie.TryParse(headerValue, _received, _defaultOriginUri, out Cookie cookie));
+            Assert.True(Cookie.TryParse(headerValue, _received, _defaultOriginUri, out ICookie cookie));
 
             var actual = cookie.IsValid(out string reason);
             Assert.True(actual == expectedIsValid, $"Cookie should{(expectedIsValid ? "" : " not")} be validated.");
