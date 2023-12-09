@@ -16,12 +16,12 @@ namespace DG.Common.Http.Tests.Cookies
         {
             string headerValue = $"sessionId=38afes7a8";
 
-            Assert.True(Cookie.TryParse(headerValue, _received, _defaultOriginUri, out Cookie cookie));
+            Assert.True(Cookie.TryParse(headerValue, _received, _defaultOriginUri, out ICookie cookie));
 
-            Assert.Equal("sessionId", cookie.Name);
-            Assert.Equal("38afes7a8", cookie.Value);
-            Assert.False(cookie.IsExpired(), "Cookie should not be expired.");
-            Assert.True(cookie.IsSessionCookie, "Cookie should be marked as session cookie.");
+            cookie.Name.Should().Be("sessionId");
+            cookie.Value.Should().Be("38afes7a8");
+            cookie.IsExpired().Should().BeFalse();
+            cookie.IsSessionCookie().Should().BeTrue();
         }
 
         public static object[][] ExpiresData = new object[][]
@@ -36,13 +36,13 @@ namespace DG.Common.Http.Tests.Cookies
             string cookieExpires = expirationDate.ToCookieExpiresString();
             string headerValue = $"id=a3fWa; Expires={cookieExpires}";
 
-            bool canParse = Cookie.TryParse(headerValue, expirationDate.AddDays(-1), _defaultOriginUri, out Cookie cookie);
+            bool canParse = Cookie.TryParse(headerValue, expirationDate.AddDays(-1), _defaultOriginUri, out ICookie cookie);
 
             canParse.Should().BeTrue();
             cookie.Name.Should().Be("id");
             cookie.Value.Should().Be("a3fWa");
             cookie.IsExpired().Should().Be(isExpired);
-            cookie.IsSessionCookie.Should().BeFalse();
+            cookie.IsSessionCookie().Should().BeFalse();
         }
 
         public static object[][] MaxAgeData = new object[][]
@@ -57,12 +57,12 @@ namespace DG.Common.Http.Tests.Cookies
         {
             string headerValue = $"id=a3fWa; Max-Age={maxAge}";
 
-            Assert.True(Cookie.TryParse(headerValue, _received, _defaultOriginUri, out Cookie cookie));
+            Assert.True(Cookie.TryParse(headerValue, _received, _defaultOriginUri, out ICookie cookie));
 
-            Assert.Equal("id", cookie.Name);
-            Assert.Equal("a3fWa", cookie.Value);
-            Assert.True(cookie.IsExpired() == isExpired, $"cookie.{nameof(isExpired)}() should return {isExpired}.");
-            Assert.False(cookie.IsSessionCookie, "Cookie should not be marked as session cookie.");
+            cookie.Name.Should().Be("id");
+            cookie.Value.Should().Be("a3fWa");
+            cookie.IsExpired().Should().Be(isExpired);
+            cookie.IsSessionCookie().Should().BeFalse();
         }
     }
 }

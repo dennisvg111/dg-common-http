@@ -6,10 +6,10 @@ namespace DG.Common.Http.Cookies
     /// <para>Sorts cookies as defined by RFC 6265 section 5.4</para>
     /// <para>This represents the order in which they should appear in an HTTP <c>Cookie</c> header</para>
     /// </summary>
-    public class CookieComparer : IComparer<ICookieIngredients>
+    public class ICookieComparer : IComparer<ICookie>
     {
         /// <summary>
-        /// Compares two instances of <see cref="ICookieIngredients"/> and returns a value indicating which should appear first in a <c>Cookie</c> header.
+        /// Compares two instances of <see cref="ICookie"/> and returns a value indicating which should appear first in a <c>Cookie</c> header.
         /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
@@ -20,7 +20,7 @@ namespace DG.Common.Http.Cookies
         /// <item><description>Greater than zero: <paramref name="x"/> should appear after <paramref name="y"/></description></item>
         /// </list>
         /// </returns>
-        public int Compare(ICookieIngredients x, ICookieIngredients y)
+        public int Compare(ICookie x, ICookie y)
         {
             int pathComparison = (x.Path?.Length ?? 0).CompareTo(y.Path?.Length ?? 0);
             if (pathComparison != 0)
