@@ -74,37 +74,51 @@ namespace DG.Common.Http.Cookies
         }
 
         /// <summary>
-        /// Adds all relevant cookies from this <see cref="CookieJar"/> to the given request as cookie headers.
+        /// Returns an <see cref="IEnumerable{T}"/> that iterates over the cookies in this jar that apply to the give <paramref name="uri"/>.
         /// </summary>
-        /// <param name="request"></param>
-        public void ApplyTo(HttpRequestMessage request)
+        /// <param name="uri"></param>
+        /// <returns></returns>
+        public IEnumerable<ICookie> GetFor(Uri uri)
         {
-            var uri = request.RequestUri;
-            var cookieBuilder = new StringBuilder();
-            if (request.Headers.TryGetValues("Cookie", out IEnumerable<string> values) && values.Any())
-            {
-                cookieBuilder.Append(values.First());
-            }
-            bool replaceNeeded = false;
-
             foreach (var wrapper in _cookies.Values.OrderBy(c => c.Cookie, _cookieComparer))
             {
                 if (!wrapper.AppliesTo(uri))
                 {
                     continue;
                 }
+                yield return wrapper.Cookie;
+            }
+        }
 
-                replaceNeeded = true;
+        /// <summary>
+        /// Adds all relevant cookies from this <see cref="CookieJar"/> to the given request as cookie headers.
+        /// </summary>
+        /// <param name="request"></param>
+        public void ApplyTo(HttpRequestMessage request)
+        {
+            var uri = request.RequestUri;
+            var requestCookies = GetFor(uri);
+            if (!requestCookies.Any())
+            {
+                return;
+            }
+
+            var cookieBuilder = new StringBuilder();
+            if (request.Headers.TryGetValues("Cookie", out IEnumerable<string> values) && values.Any())
+            {
+                cookieBuilder.Append(values.First());
+            }
+
+            foreach (var cookie in requestCookies)
+            {
                 if (cookieBuilder.Length > 0)
                 {
                     cookieBuilder.Append("; ");
                 }
-                cookieBuilder.Append(wrapper.Cookie.ToCookieHeaderString());
+                cookieBuilder.Append(cookie.ToCookieHeaderString());
             }
-            if (replaceNeeded)
-            {
-                request.Headers.AddOrReplace("Cookie", cookieBuilder.ToString());
-            }
+
+            request.Headers.AddOrReplace("Cookie", cookieBuilder.ToString());
         }
     }
 }
