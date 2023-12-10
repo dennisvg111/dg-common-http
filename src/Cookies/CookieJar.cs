@@ -28,7 +28,27 @@ namespace DG.Common.Http.Cookies
             _rejectInvalidCookies = rejectInvalidCookies;
         }
 
-
+        /// <summary>
+        /// <para>Tries to add the given <see cref="ICookie"/> to this <see cref="CookieJar"/>, and returns a value indicating if this action succeeded.</para>
+        /// <para>If this function returns <see langword="false"/>, this can mean the cookie is invalid or expired.</para>
+        /// </summary>
+        /// <param name="cookie"></param>
+        /// <returns></returns>
+        public bool TryAdd(ICookie cookie)
+        {
+            if (_rejectInvalidCookies && !cookie.IsValid())
+            {
+                return false;
+            }
+            string key = cookie.GenerateKey();
+            if (cookie.IsExpired())
+            {
+                _cookies.TryRemove(key, out CookieWrapper _);
+                return false;
+            }
+            _cookies[key] = new CookieWrapper(cookie);
+            return true;
+        }
 
         /// <summary>
         /// Updates the cookies contained in this <see cref="CookieJar"/> based on the <c>Set-Cookie</c> header given response.
@@ -49,17 +69,7 @@ namespace DG.Common.Http.Cookies
                 {
                     continue;
                 }
-                if (_rejectInvalidCookies && !cookie.IsValid())
-                {
-                    continue;
-                }
-                string key = cookie.GenerateKey();
-                if (cookie.IsExpired())
-                {
-                    _cookies.TryRemove(key, out CookieWrapper _);
-                    continue;
-                }
-                _cookies[key] = new CookieWrapper(cookie);
+                TryAdd(cookie);
             }
         }
 
