@@ -57,8 +57,9 @@ namespace DG.Common.Http.Fluent
         /// <param name="name"></param>
         /// <param name="value"></param>
         /// <param name="isContentHeader"></param>
-        public FluentHeader(string name, string value, bool isContentHeader = false)
-            : this(name, () => value, isContentHeader, false, () => true) { }
+        /// <param name="withoutValidation"></param>
+        public FluentHeader(string name, string value, bool isContentHeader = false, bool withoutValidation = false)
+            : this(name, () => value, isContentHeader, withoutValidation, () => true) { }
 
         /// <summary>
         /// <para>Starts the initialization of a <see cref="FluentHeader"/> for a header with the given name.</para>
@@ -69,6 +70,17 @@ namespace DG.Common.Http.Fluent
         public static IFluentHeaderBuilder WithName(string name)
         {
             return new FluentHeaderBuilder(name);
+        }
+
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="FluentHeader"/> for a <c>User-Agent</c> header with the given value.
+        /// </summary>
+        /// <param name="userAgent"></param>
+        /// <returns></returns>
+        public static FluentHeader UserAgent(string userAgent)
+        {
+            return new FluentHeader("User-Agent", userAgent);
         }
 
         /// <summary>
