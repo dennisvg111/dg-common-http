@@ -28,7 +28,27 @@ namespace DG.Common.Http.Cookies
             _rejectInvalidCookies = rejectInvalidCookies;
         }
 
-
+        /// <summary>
+        /// <para>Tries to add the given <see cref="ICookie"/> to this <see cref="CookieJar"/>, and returns a value indicating if this action succeeded.</para>
+        /// <para>If this function returns <see langword="false"/>, this can mean the cookie is invalid or expired.</para>
+        /// </summary>
+        /// <param name="cookie"></param>
+        /// <returns></returns>
+        public bool TryAdd(ICookie cookie)
+        {
+            if (_rejectInvalidCookies && !cookie.IsValid())
+            {
+                return false;
+            }
+            string key = cookie.GenerateKey();
+            if (cookie.IsExpired())
+            {
+                _cookies.TryRemove(key, out CookieWrapper _);
+                return false;
+            }
+            _cookies[key] = new CookieWrapper(cookie);
+            return true;
+        }
 
         /// <summary>
         /// Updates the cookies contained in this <see cref="CookieJar"/> based on the <c>Set-Cookie</c> header given response.
@@ -49,17 +69,24 @@ namespace DG.Common.Http.Cookies
                 {
                     continue;
                 }
-                if (_rejectInvalidCookies && !cookie.IsValid())
+                TryAdd(cookie);
+            }
+        }
+
+        /// <summary>
+        /// Returns an <see cref="IEnumerable{T}"/> that iterates over the cookies in this jar that apply to the give <paramref name="uri"/>.
+        /// </summary>
+        /// <param name="uri"></param>
+        /// <returns></returns>
+        public IEnumerable<ICookie> GetFor(Uri uri)
+        {
+            foreach (var wrapper in _cookies.Values.OrderBy(c => c.Cookie, _cookieComparer))
+            {
+                if (!wrapper.AppliesTo(uri))
                 {
                     continue;
                 }
-                string key = cookie.GenerateKey();
-                if (cookie.IsExpired())
-                {
-                    _cookies.TryRemove(key, out CookieWrapper _);
-                    continue;
-                }
-                _cookies[key] = new CookieWrapper(cookie);
+                yield return wrapper.Cookie;
             }
         }
 
@@ -70,31 +97,28 @@ namespace DG.Common.Http.Cookies
         public void ApplyTo(HttpRequestMessage request)
         {
             var uri = request.RequestUri;
+            var requestCookies = GetFor(uri);
+            if (!requestCookies.Any())
+            {
+                return;
+            }
+
             var cookieBuilder = new StringBuilder();
             if (request.Headers.TryGetValues("Cookie", out IEnumerable<string> values) && values.Any())
             {
                 cookieBuilder.Append(values.First());
             }
-            bool replaceNeeded = false;
 
-            foreach (var wrapper in _cookies.Values.OrderBy(c => c.Cookie, _cookieComparer))
+            foreach (var cookie in requestCookies)
             {
-                if (!wrapper.AppliesTo(uri))
-                {
-                    continue;
-                }
-
-                replaceNeeded = true;
                 if (cookieBuilder.Length > 0)
                 {
                     cookieBuilder.Append("; ");
                 }
-                cookieBuilder.Append(wrapper.Cookie.ToCookieHeaderString());
+                cookieBuilder.Append(cookie.ToCookieHeaderString());
             }
-            if (replaceNeeded)
-            {
-                request.Headers.AddOrReplace("Cookie", cookieBuilder.ToString());
-            }
+
+            request.Headers.AddOrReplace("Cookie", cookieBuilder.ToString());
         }
     }
 }
