@@ -12,6 +12,7 @@ namespace DG.Common.Http.Fluent
         private readonly string _name;
         private readonly Func<string> _value;
         private readonly bool _isContentHeader;
+        private readonly bool _withoutValidation;
         private readonly Func<bool> _apply;
 
         /// <summary>
@@ -36,11 +37,17 @@ namespace DG.Common.Http.Fluent
         /// </summary>
         public bool ShouldApply => _apply();
 
-        private FluentHeader(string name, Func<string> value, bool isContentHeader, Func<bool> apply)
+        /// <summary>
+        /// Indicates if this header should be validated when adding it to a request.
+        /// </summary>
+        public bool SkipValidation => _withoutValidation;
+
+        private FluentHeader(string name, Func<string> value, bool isContentHeader, bool withoutValidation, Func<bool> apply)
         {
             _name = name;
             _value = value;
             _isContentHeader = isContentHeader;
+            _withoutValidation = withoutValidation;
             _apply = apply;
         }
 
@@ -51,7 +58,7 @@ namespace DG.Common.Http.Fluent
         /// <param name="value"></param>
         /// <param name="isContentHeader"></param>
         public FluentHeader(string name, string value, bool isContentHeader = false)
-            : this(name, () => value, isContentHeader, () => true) { }
+            : this(name, () => value, isContentHeader, false, () => true) { }
 
         /// <summary>
         /// <para>Starts the initialization of a <see cref="FluentHeader"/> for a header with the given name.</para>
@@ -91,7 +98,7 @@ namespace DG.Common.Http.Fluent
         /// <returns></returns>
         public static FluentHeader Authorization(IAuthorizationHeaderProvider authorizationHeaderProvider)
         {
-            return new FluentHeader("Authorization", () => authorizationHeaderProvider.GetAuthorizationHeaderValue().ToString(), false, () => true);
+            return new FluentHeader("Authorization", () => authorizationHeaderProvider.GetAuthorizationHeaderValue().ToString(), false, false, () => true);
         }
 
         /// <summary>
@@ -102,7 +109,7 @@ namespace DG.Common.Http.Fluent
         /// <returns></returns>
         public static FluentHeader OptionalAuthorization(IAuthorizationHeaderProvider authorizationHeaderProvider)
         {
-            return new FluentHeader("Authorization", () => authorizationHeaderProvider.GetAuthorizationHeaderValue().ToString(), false, () => authorizationHeaderProvider.IsAuthorized);
+            return new FluentHeader("Authorization", () => authorizationHeaderProvider.GetAuthorizationHeaderValue().ToString(), false, false, () => authorizationHeaderProvider.IsAuthorized);
         }
 
         /// <summary>
@@ -147,6 +154,15 @@ namespace DG.Common.Http.Fluent
         public static FluentHeader Referrer(Uri referrer)
         {
             return new FluentHeader("Referer", referrer.ToString());
+        }
+
+        /// <summary>
+        /// Returns a copy of this header that should not be validated before adding it to a request.
+        /// </summary>
+        /// <returns></returns>
+        public FluentHeader WithoutValidation()
+        {
+            return new FluentHeader(_name, _value, _isContentHeader, true, _apply);
         }
 
         /// <summary>
