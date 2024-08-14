@@ -32,7 +32,7 @@ namespace DG.Common.Http.Fluent
         public bool IsContentHeader => _isContentHeader;
 
         /// <summary>
-        /// <para>Indicates if this header should be applied to a request. For headers initialized using <see cref="FluentHeader.FluentHeader(string, string, bool)"/> this always returns <see langword="true"/>.</para>
+        /// <para>Indicates if this header should be applied to a request. For headers initialized using <see cref="FluentHeader.FluentHeader(string, string, bool, bool)"/> this always returns <see langword="true"/>.</para>
         /// <para>This is used with some special headers like <c>Authorization</c> headers where <see cref="IAuthorizationHeaderProvider.IsAuthorized"/> is <see langword="false"/>.</para>
         /// </summary>
         public bool ShouldApply => _apply();
