@@ -1,7 +1,6 @@
 ﻿using DG.Common.Caching;
 using System;
 using System.Net.Http;
-using System.Runtime.Caching;
 
 namespace DG.Common.Http
 {
@@ -12,7 +11,7 @@ namespace DG.Common.Http
     {
         //We cache clients to prevent socket exhaustion, and cache it only for 5 minutes to prevent DNS problems.
         private const string _cacheName = "DG.Common.Http " + nameof(HttpClientProvider) + " Cache";
-        private static readonly TypedCache<HttpClient> _cache = new TypedCache<HttpClient>(
+        private static readonly DG.Common.Caching<HttpClient> _cache = new TypedCache<HttpClient>(
             ExpirationPolicy.ForAbsoluteExpiration(TimeSpan.FromMinutes(5)),
             new MemoryCache(_cacheName)
         );
