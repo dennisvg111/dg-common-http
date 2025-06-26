@@ -10,8 +10,8 @@ namespace DG.Common.Http.Tests
         {
             var settings = HttpClientSettings.WithBaseAddress("https://www.test.com");
 
-            var client1 = HttpClientProvider.CreateNewClientForSettings(settings);
-            var client2 = HttpClientProvider.CreateNewClientForSettings(settings);
+            var client1 = CachedHttpClientProvider.CreateNewClientForSettings(settings);
+            var client2 = CachedHttpClientProvider.CreateNewClientForSettings(settings);
 
             client1.Should().NotBeSameAs(client2);
         }
@@ -22,8 +22,8 @@ namespace DG.Common.Http.Tests
             var settings1 = HttpClientSettings.WithBaseAddress("https://www.test.com");
             var settings2 = HttpClientSettings.WithBaseAddress("https://www.test.com");
 
-            var client1 = HttpClientProvider.ClientForSettings(settings1);
-            var client2 = HttpClientProvider.ClientForSettings(settings2);
+            var client1 = CachedHttpClientProvider.ClientForSettings(settings1);
+            var client2 = CachedHttpClientProvider.ClientForSettings(settings2);
 
             client1.Should().BeSameAs(client2);
         }
@@ -34,8 +34,8 @@ namespace DG.Common.Http.Tests
             var settings1 = HttpClientSettings.WithBaseAddress("https://www.test.com");
             var settings2 = HttpClientSettings.WithBaseAddress("https://www.other-test.com");
 
-            var client1 = HttpClientProvider.ClientForSettings(settings1);
-            var client2 = HttpClientProvider.ClientForSettings(settings2);
+            var client1 = CachedHttpClientProvider.ClientForSettings(settings1);
+            var client2 = CachedHttpClientProvider.ClientForSettings(settings2);
 
             client1.Should().NotBeSameAs(client2);
         }

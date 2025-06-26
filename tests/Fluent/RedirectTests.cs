@@ -17,7 +17,7 @@ namespace DG.Common.Http.Tests.Fluent
         [Fact]
         public async void LimitAutomaticRedirectsTo_Works()
         {
-            var client = HttpClientProvider.ClientForSettings(_settings);
+            var client = CachedHttpClientProvider.ClientForSettings(_settings);
             var request = FluentRequest.Get.To("/redirect-to?url=%3Furl%3Dfinal-url")
                 .LimitAutomaticRedirectsTo(1);
 
@@ -32,7 +32,7 @@ namespace DG.Common.Http.Tests.Fluent
         [Fact]
         public async void Redirection_Works()
         {
-            var client = HttpClientProvider.ClientForSettings(_settings);
+            var client = CachedHttpClientProvider.ClientForSettings(_settings);
             var request = FluentRequest.Get.To("/redirect-to?url=%3Furl%3Dfinal-url");
 
             var result = await client.SendAsync(request);
@@ -45,7 +45,7 @@ namespace DG.Common.Http.Tests.Fluent
         [Fact]
         public async void CookieJar_Collects()
         {
-            var client = HttpClientProvider.ClientForSettings(_settings);
+            var client = CachedHttpClientProvider.ClientForSettings(_settings);
             var jar = new CookieJar();
 
             var result = new HttpResponseMessage(HttpStatusCode.Redirect);

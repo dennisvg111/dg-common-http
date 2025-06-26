@@ -278,7 +278,7 @@ namespace DG.Common.Http.Fluent
         /// <returns></returns>
         public async Task<HttpResponseMessage> SendAsync()
         {
-            var client = HttpClientProvider.ClientForSettings(_defaultClientSettings);
+            var client = CachedHttpClientProvider.ClientForSettings(_defaultClientSettings);
 
             return await client.SendAsync(this);
         }
@@ -290,7 +290,7 @@ namespace DG.Common.Http.Fluent
         /// <returns></returns>
         public async Task<T> SendAndDeserializeAsync<T>()
         {
-            var client = HttpClientProvider.ClientForSettings(_defaultClientSettings);
+            var client = CachedHttpClientProvider.ClientForSettings(_defaultClientSettings);
 
             return await client.SendAndDeserializeAsync<T>(this);
         }
