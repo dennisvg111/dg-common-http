@@ -7,21 +7,21 @@ namespace DG.Common.Http
     /// <summary>
     /// This class provides a custom way to create cached instances of <see cref="HttpClient"/> to prevent socket exhaustion and DNS caching problems.
     /// </summary>
-    public class CachedHttpClientProvider
+    public class HttpClientProvider
     {
-        private const string _sharedCacheName = "DG.Common.Http " + nameof(CachedHttpClientProvider) + " Cache";
+        private const string _sharedCacheName = "DG.Common.Http " + nameof(HttpClientProvider) + " Cache";
 
         //We cache clients to prevent socket exhaustion, and cache it only for 5 minutes to prevent DNS problems.
         private static readonly ExpirationPolicy _expirationPolicy = ExpirationPolicy.ForAbsoluteExpiration(TimeSpan.FromMinutes(5));
 
         private readonly ITypedCache<HttpClient> _cache;
 
-        public CachedHttpClientProvider(ITypedCache<HttpClient> cache)
+        public HttpClientProvider(ITypedCache<HttpClient> cache)
         {
             _cache = cache;
         }
 
-        public CachedHttpClientProvider(ICacheFactory cacheFactory)
+        public HttpClientProvider(ICacheFactory cacheFactory)
         {
             var provider = new CacheProvider(cacheFactory);
             _cache = provider.Named<HttpClient>(_sharedCacheName);

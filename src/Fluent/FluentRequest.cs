@@ -273,10 +273,10 @@ namespace DG.Common.Http.Fluent
         }
 
         /// <summary>
-        ///  Send an HTTP request based on the given <see cref="FluentRequest"/> as an asynchronous operation.
+        ///  Send an HTTP request based on the given <see cref="FluentRequest"/> as an asynchronous operation, using a created from the given <paramref name="clientProvider"/>.
         /// </summary>
         /// <returns></returns>
-        public async Task<HttpResponseMessage> SendAsync(CachedHttpClientProvider clientProvider)
+        public async Task<HttpResponseMessage> SendAsync(HttpClientProvider clientProvider)
         {
             var client = clientProvider.ClientForSettings(_defaultClientSettings);
 
@@ -284,15 +284,12 @@ namespace DG.Common.Http.Fluent
         }
 
         /// <summary>
-        /// Send an HTTP request based on the given <see cref="FluentRequest"/> as an asynchronous operation, and deserializes the resulting JSON response content to the specified type.
+        ///  Send an HTTP request based on the given <see cref="FluentRequest"/> as an asynchronous operation, using the given <paramref name="client"/>.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public async Task<T> SendAndDeserializeAsync<T>(CachedHttpClientProvider clientProvider)
+        public async Task<HttpResponseMessage> SendAsync(HttpClient client)
         {
-            var client = clientProvider.ClientForSettings(_defaultClientSettings);
-
-            return await client.SendAndDeserializeAsync<T>(this);
+            return await client.SendAsync(this);
         }
 
         /// <summary>

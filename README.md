@@ -12,6 +12,7 @@ This allows you to replace the following code
 
 ```cs
 using System.Net.Http;
+using Newtonsoft.Json;
 
 var client = new HttpClient();
 
@@ -27,19 +28,29 @@ var request = new HttpRequestMessage(HttpMethod.Post, "https://www.example.com/l
 request.Headers.Add("Authorization", "Bearer " + token);
 
 var response = await client.SendAsync(request);
+var jsonContent = await response.Content.ReadAsStringAsync()
+var result = JsonConvert.DeserializeObject<SomeObject>(jsonContent);
 
 ```
 With this
 
 ```cs
+using System.Net.Http;
 using DG.Common.Http.Fluent;
 
-var response = await FluentRequest.Post.To("https://www.example.com/login")
+var client = new HttpClient();
+
+var request = FluentRequest.Post.To("https://www.example.com/login")
   .WithContent(FluentFormContentBuilder
     .With("username", "test")
     .AndWith("password", "MyPassword123#"))
-  .WithAuthorizaton(FluentAuthorization.FromBearer(token))
-  .Send();
+  .WithAuthorizaton(FluentAuthorization.FromBearer(token));
+
+var result = await client.SendAsync(request)
+  .DeserializeResponseAsync<SomeObject>();
+
+// Or, if you do not need the HttpResponseMessage, you can use the SendAndDeserializeAsync method directly:
+// var result = await client.SendAndDeserializeAsync<SomeObject>(request);
 ```
 
 ## OAuth authorization

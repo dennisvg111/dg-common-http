@@ -25,7 +25,7 @@ namespace DG.Common.Http.Fluent
             if (response.IsRedirect() && request.MaxRedirects > 0)
             {
                 var redirect = request.RedirectForResponse(response);
-                return await SendAsync(client, redirect).ConfigureAwait(false);
+                return await client.SendAsync(redirect).ConfigureAwait(false);
             }
 
             return response;
