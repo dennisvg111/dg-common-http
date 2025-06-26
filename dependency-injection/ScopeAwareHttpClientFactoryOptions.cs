@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace DG.Common.Http.DependencyInjection.Extensions
+namespace DG.Common.Http.DependencyInjection
 {
     /// <summary>
     /// Provides configuration options for creating HTTP clients with a specific handler type.

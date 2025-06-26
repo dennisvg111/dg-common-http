@@ -276,9 +276,9 @@ namespace DG.Common.Http.Fluent
         ///  Send an HTTP request based on the given <see cref="FluentRequest"/> as an asynchronous operation.
         /// </summary>
         /// <returns></returns>
-        public async Task<HttpResponseMessage> SendAsync()
+        public async Task<HttpResponseMessage> SendAsync(CachedHttpClientProvider clientProvider)
         {
-            var client = CachedHttpClientProvider.ClientForSettings(_defaultClientSettings);
+            var client = clientProvider.ClientForSettings(_defaultClientSettings);
 
             return await client.SendAsync(this);
         }
@@ -288,9 +288,9 @@ namespace DG.Common.Http.Fluent
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public async Task<T> SendAndDeserializeAsync<T>()
+        public async Task<T> SendAndDeserializeAsync<T>(CachedHttpClientProvider clientProvider)
         {
-            var client = CachedHttpClientProvider.ClientForSettings(_defaultClientSettings);
+            var client = clientProvider.ClientForSettings(_defaultClientSettings);
 
             return await client.SendAndDeserializeAsync<T>(this);
         }

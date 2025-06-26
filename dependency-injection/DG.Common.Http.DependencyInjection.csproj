@@ -1,14 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<ProjectGuid>a64bb580-9b54-48c0-b954-6d67d1c5dde0</ProjectGuid>
+		<ProjectGuid>{F5282D3D-99E3-4797-8F5E-155CECDB1E39}</ProjectGuid>
 		<TargetFramework>netstandard2.0</TargetFramework>
-		<AssemblyTitle>DG.Common.Http.DependencyInjection.Extensions</AssemblyTitle>
-		<Product>DG.Common.Http.DependencyInjection.Extensions</Product>
+		<AssemblyTitle>DG.Common.Http.DependencyInjection</AssemblyTitle>
+		<Product>DG.Common.Http.DependencyInjection</Product>
 		<Copyright>Copyright ©  2023</Copyright>
 		<OutputPath>bin\$(Configuration)\</OutputPath>
 		<AllowUnsafeBlocks>False</AllowUnsafeBlocks>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-		<Title>DG.Common.Http.DependencyInjection.Extensions</Title>
+		<Title>DG.Common.Http.DependencyInjection</Title>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<RepositoryUrl>https://github.com/dennisvg111/dg-common-http</RepositoryUrl>
 		<Deterministic>false</Deterministic>

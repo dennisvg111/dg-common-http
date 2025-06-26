@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using System.Linq;
 using System.Net.Http;
 
-namespace DG.Common.Http.DependencyInjection.Extensions
+namespace DG.Common.Http.DependencyInjection
 {
     /// <summary>
     /// Provides extension methods for configuring an <see cref="IHttpClientBuilder"/> to use scope-aware HTTP handlers.

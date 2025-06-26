@@ -4,7 +4,7 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Net.Http;
 
-namespace DG.Common.Http.DependencyInjection.Extensions
+namespace DG.Common.Http.DependencyInjection
 {
     // Based on https://github.com/dotnet/docs/blob/main/docs/core/extensions/snippets/http/scopeworkaround/ScopeAwareHttpClientFactory.cs
 
