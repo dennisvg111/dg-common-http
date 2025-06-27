@@ -71,11 +71,11 @@ namespace DG.Common.Http.Cookies
         /// Parses a HTTP Set-Cookie header value to an instance of <see cref="CookieWrapper"/>, and returns a value indicating if parsing succeeded.
         /// </summary>
         /// <param name="headerValue"></param>
-        /// <param name="receievedDate"></param>
+        /// <param name="receivedDate"></param>
         /// <param name="originUri"></param>
         /// <param name="cookie"></param>
         /// <returns></returns>
-        public static bool TryParse(string headerValue, DateTimeOffset receievedDate, Uri originUri, out ReadOnlyCookie cookie)
+        public static bool TryParse(string headerValue, DateTimeOffset receivedDate, Uri originUri, out ReadOnlyCookie cookie)
         {
             if (!headerValue.Contains("="))
             {
@@ -88,7 +88,7 @@ namespace DG.Common.Http.Cookies
                 cookie = null;
                 return false;
             }
-            cookie = new ReadOnlyCookie(properties[0].Name, properties[0].Value, originUri, receievedDate);
+            cookie = new ReadOnlyCookie(properties[0].Name, properties[0].Value, originUri, receivedDate);
 
             properties = properties.Skip(1).ToArray();
             cookie.ParseAdditionalProperties(properties);
