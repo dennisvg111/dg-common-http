@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace DG.Common.Http.DependencyInjection.Tests;
 public class ScopeAwareHttpClientBuilderExtensionsTests
 {
-    private IServiceCollection BuildDefaultClientFactoryServices()
+    private static IServiceCollection BuildDefaultClientFactoryServices()
     {
         var services = new ServiceCollection();
         services.AddHttpClient("TestClient")
@@ -15,7 +15,7 @@ public class ScopeAwareHttpClientBuilderExtensionsTests
 
         return services;
     }
-    private IServiceCollection BuildScopeAwareClientFactoryServices()
+    private static IServiceCollection BuildScopeAwareClientFactoryServices()
     {
         var services = new ServiceCollection();
         services.AddHttpClient("TestClient")
