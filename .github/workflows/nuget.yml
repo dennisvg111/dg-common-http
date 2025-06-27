@@ -24,3 +24,11 @@ jobs:
         
       - name: Push Package to NuGet.org
         run: dotnet nuget push ./src/out/*.nupkg -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json --skip-duplicate
+        
+      - name: Build caching project and generate NuGet package
+        run: |  
+          cd ./dependency-injection/
+          dotnet pack -c Release -o out -p:GeneratePackageOnBuild=false
+        
+      - name: Push caching Package to NuGet.org
+        run: dotnet nuget push ./dependency-injection/out/*.nupkg -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json --skip-duplicate
