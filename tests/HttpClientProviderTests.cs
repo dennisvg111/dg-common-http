@@ -1,4 +1,5 @@
-﻿using DG.Common.Caching.Memory;
+﻿using DG.Common.Caching;
+using DG.Common.Caching.Memory;
 using FluentAssertions;
 using Xunit;
 
@@ -6,7 +7,7 @@ namespace DG.Common.Http.Tests
 {
     public class HttpClientProviderTests
     {
-        private static HttpClientProvider _httpClientProvider = new HttpClientProvider(new MemoryCacheFactory());
+        private static HttpClientProvider _httpClientProvider = new HttpClientProvider(new TypedCacheProvider(TypedMemoryCacheFactory.Default));
 
         [Fact]
         public void CreateNewClientForSettings_SameSettings_ReturnsNewInstance()

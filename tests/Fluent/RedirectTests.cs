@@ -1,4 +1,5 @@
-﻿using DG.Common.Caching.Memory;
+﻿using DG.Common.Caching;
+using DG.Common.Caching.Memory;
 using DG.Common.Http.Cookies;
 using DG.Common.Http.Fluent;
 using Newtonsoft.Json;
@@ -11,7 +12,7 @@ namespace DG.Common.Http.Tests.Fluent
 {
     public class RedirectTests
     {
-        private static HttpClientProvider _httpClientProvider = new HttpClientProvider(new MemoryCacheFactory());
+        private static HttpClientProvider _httpClientProvider = new HttpClientProvider(new TypedCacheProvider(TypedMemoryCacheFactory.Default));
         private static HttpClientSettings _settings = HttpClientSettings.WithBaseAddress("https://httpbin.org")
             .WithoutRedirects()
             .WithoutCookies();
