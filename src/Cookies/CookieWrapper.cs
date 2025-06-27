@@ -28,7 +28,7 @@ namespace DG.Common.Http.Cookies
             ThrowIf.Parameter.Matches(cookieBase.OriginUri, (uri) => !uri.IsAbsoluteUri, nameof(cookieBase.OriginUri), "Parameter must be an absolute URI.");
             ThrowIf.Parameter.IsNullOrEmpty(cookieBase.Name, nameof(cookieBase.Name));
 
-            _base = cookieBase;
+            _base = new ReadOnlyCookie(cookieBase);
             _path = new CookieUriData(cookieBase);
         }
 
