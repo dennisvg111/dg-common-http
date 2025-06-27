@@ -1,5 +1,8 @@
-namespace DG.Common.Http.DependencyInjection.Tests;
+namespace DG.Common.Http.DependencyInjection.Tests.Helpers;
 
+/// <summary>
+/// A message handler that will always return string content with the instance ID of the <see cref="ScopedService"/> it was constructed with.
+/// </summary>
 public class ScopedMessageHander : DelegatingHandler
 {
     private readonly ScopedService _service;

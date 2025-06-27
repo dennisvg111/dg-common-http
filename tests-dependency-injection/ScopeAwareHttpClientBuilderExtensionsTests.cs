@@ -1,4 +1,5 @@
 ﻿using AwesomeAssertions;
+using DG.Common.Http.DependencyInjection.Tests.Helpers;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DG.Common.Http.DependencyInjection.Tests;
