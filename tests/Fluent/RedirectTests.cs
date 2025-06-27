@@ -1,4 +1,6 @@
-﻿using DG.Common.Http.Cookies;
+﻿using DG.Common.Caching;
+using DG.Common.Caching.Memory;
+using DG.Common.Http.Cookies;
 using DG.Common.Http.Fluent;
 using Newtonsoft.Json;
 using System.Collections.Generic;
@@ -10,6 +12,7 @@ namespace DG.Common.Http.Tests.Fluent
 {
     public class RedirectTests
     {
+        private static HttpClientProvider _httpClientProvider = new HttpClientProvider(new TypedCacheProvider(TypedMemoryCacheFactory.Default));
         private static HttpClientSettings _settings = HttpClientSettings.WithBaseAddress("https://httpbin.org")
             .WithoutRedirects()
             .WithoutCookies();
@@ -17,7 +20,7 @@ namespace DG.Common.Http.Tests.Fluent
         [Fact]
         public async void LimitAutomaticRedirectsTo_Works()
         {
-            var client = HttpClientProvider.ClientForSettings(_settings);
+            var client = _httpClientProvider.ClientForSettings(_settings);
             var request = FluentRequest.Get.To("/redirect-to?url=%3Furl%3Dfinal-url")
                 .LimitAutomaticRedirectsTo(1);
 
@@ -32,7 +35,7 @@ namespace DG.Common.Http.Tests.Fluent
         [Fact]
         public async void Redirection_Works()
         {
-            var client = HttpClientProvider.ClientForSettings(_settings);
+            var client = _httpClientProvider.ClientForSettings(_settings);
             var request = FluentRequest.Get.To("/redirect-to?url=%3Furl%3Dfinal-url");
 
             var result = await client.SendAsync(request);
@@ -45,7 +48,7 @@ namespace DG.Common.Http.Tests.Fluent
         [Fact]
         public async void CookieJar_Collects()
         {
-            var client = HttpClientProvider.ClientForSettings(_settings);
+            var client = _httpClientProvider.ClientForSettings(_settings);
             var jar = new CookieJar();
 
             var result = new HttpResponseMessage(HttpStatusCode.Redirect);
