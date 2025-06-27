@@ -1,7 +1,4 @@
-﻿using DG.Common.Http.Headers;
-using System;
-using System.Globalization;
-using System.Linq;
+﻿using System;
 
 namespace DG.Common.Http.Cookies
 {
@@ -15,16 +12,16 @@ namespace DG.Common.Http.Cookies
         private readonly string _value;
         private readonly Uri _originUri;
 
-        private string _domain;
-        private string _path;
+        private readonly string _domain;
+        private readonly string _path;
 
         private readonly DateTimeOffset _receivedDate;
-        private DateTimeOffset? _expires;
-        private int? _maxAge; //in seconds
+        private readonly DateTimeOffset? _expires;
+        private readonly int? _maxAge; //in seconds
 
-        private bool _secure;
-        private bool _httpOnly;
-        private SameSitePolicy _policy = SameSitePolicy.Lax;
+        private readonly bool _secure;
+        private readonly bool _httpOnly;
+        private readonly SameSitePolicy _policy = SameSitePolicy.Lax;
 
         /// <inheritdoc/>
         public string Name => _name;
@@ -36,10 +33,10 @@ namespace DG.Common.Http.Cookies
         public Uri OriginUri => _originUri;
 
         /// <inheritdoc/>
-        public string Path => _path;
+        public string Domain => _domain;
 
         /// <inheritdoc/>
-        public string Domain => _domain;
+        public string Path => _path;
 
         /// <inheritdoc/>
         public DateTimeOffset ReceivedDate => _receivedDate;
@@ -67,66 +64,16 @@ namespace DG.Common.Http.Cookies
             _receivedDate = receivedDate;
         }
 
-        /// <summary>
-        /// Parses a HTTP Set-Cookie header value to an instance of <see cref="CookieWrapper"/>, and returns a value indicating if parsing succeeded.
-        /// </summary>
-        /// <param name="headerValue"></param>
-        /// <param name="receievedDate"></param>
-        /// <param name="originUri"></param>
-        /// <param name="cookie"></param>
-        /// <returns></returns>
-        public static bool TryParse(string headerValue, DateTimeOffset receievedDate, Uri originUri, out ReadOnlyCookie cookie)
+        internal ReadOnlyCookie(ICookie cookie)
+            : this(cookie.Name, cookie.Value, cookie.OriginUri == null ? null : new UriBuilder(cookie.OriginUri).Uri, cookie.ReceivedDate)
         {
-            if (!headerValue.Contains("="))
-            {
-                cookie = null;
-                return false;
-            }
-            var properties = HeaderValuePart.ParseList(headerValue);
-            if (properties == null || properties.Length == 0 || (properties[0].Name?.Length ?? 0) == 0)
-            {
-                cookie = null;
-                return false;
-            }
-            cookie = new ReadOnlyCookie(properties[0].Name, properties[0].Value, originUri, receievedDate);
-
-            properties = properties.Skip(1).ToArray();
-            cookie.ParseAdditionalProperties(properties);
-            return true;
-        }
-
-        private void ParseAdditionalProperties(HeaderValuePart[] properties)
-        {
-            if (properties.TryGet("Domain", out string domain))
-            {
-                _domain = domain;
-            }
-            if (properties.TryGet("Path", out string path))
-            {
-                _path = path;
-            }
-
-            if (properties.TryGet("HttpOnly", out _))
-            {
-                _httpOnly = true;
-            }
-            if (properties.TryGet("Secure", out _))
-            {
-                _secure = true;
-            }
-            if (properties.TryGet("SameSite", out string sameSiteString) && Enum.TryParse(sameSiteString, true, out SameSitePolicy policy))
-            {
-                _policy = policy;
-            }
-
-            if (properties.TryGet("Expires", out string expiresString) && DateTimeOffset.TryParse(expiresString, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTimeOffset expires))
-            {
-                _expires = expires;
-            }
-            if (properties.TryGet("Max-Age", out string maxAgeString) && int.TryParse(maxAgeString, out int maxAge))
-            {
-                _maxAge = maxAge;
-            }
+            _domain = cookie.Domain;
+            _path = cookie.Path;
+            _expires = cookie.Expires;
+            _maxAge = cookie.MaxAge;
+            _secure = cookie.IsSecure;
+            _httpOnly = cookie.HttpOnly;
+            _policy = cookie.SameSitePolicy;
         }
     }
 }

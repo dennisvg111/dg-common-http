@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DG.Common.Http.Fluent;
+using System;
 
 namespace DG.Common.Http.Cookies
 {
@@ -102,6 +103,24 @@ namespace DG.Common.Http.Cookies
         public static string ToCookieHeaderString(this ICookie cookie)
         {
             return $"{cookie.Name}={cookie.Value}";
+        }
+
+        /// <summary>
+        /// Converts the specified <see cref="ICookie"/> instance to its equivalent <c>Set-Cookie</c> header value string representation.
+        /// </summary>
+        /// <remarks>
+        /// <para>Note that this will not include the origin URI, or the received date and time of the cookie.</para>
+        /// <para>This value can be parsed using <see cref="Cookie.TryParse(string, DateTimeOffset, Uri, out ICookie)"/> to receive a cookie that is functionally the same as the original.</para>
+        /// </remarks>
+        /// <param name="cookie">The <see cref="ICookie"/> instance to convert.</param>
+        /// <returns>A string representing the <c>Set-Cookie</c> header value for the specified cookie.</returns>
+        public static string ToSetCookieHeaderString(this ICookie cookie)
+        {
+            if (cookie is FluentCookie fluentCookie)
+            {
+                return fluentCookie.ConvertToSetCookieHeader().Value;
+            }
+            return new FluentCookie(cookie).ConvertToSetCookieHeader().Value;
         }
     }
 }
