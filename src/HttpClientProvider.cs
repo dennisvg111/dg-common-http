@@ -30,8 +30,8 @@ namespace DG.Common.Http
         /// </summary>
         /// <param name="cacheProvider"></param>
         public HttpClientProvider(TypedCacheProvider cacheProvider)
+            : this(cacheProvider.Named<HttpClient>(_sharedCacheName))
         {
-            _cache = cacheProvider.Named<HttpClient>(_sharedCacheName);
         }
 
         /// <summary>
