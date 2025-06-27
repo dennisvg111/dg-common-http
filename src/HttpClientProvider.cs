@@ -16,15 +16,22 @@ namespace DG.Common.Http
 
         private readonly ITypedCache<HttpClient> _cache;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="HttpClientProvider"/> using the given <paramref name="cache"/> to store instances of <see cref="HttpClient"/>.
+        /// </summary>
+        /// <param name="cache"></param>
         public HttpClientProvider(ITypedCache<HttpClient> cache)
         {
             _cache = cache;
         }
 
-        public HttpClientProvider(ICacheFactory cacheFactory)
+        /// <summary>
+        /// Initializes a new instance of <see cref="HttpClientProvider"/> using the given <paramref name="cacheProvider"/> to create a shared cache for instances of <see cref="HttpClient"/>.
+        /// </summary>
+        /// <param name="cacheProvider"></param>
+        public HttpClientProvider(TypedCacheProvider cacheProvider)
         {
-            var provider = new CacheProvider(cacheFactory);
-            _cache = provider.Named<HttpClient>(_sharedCacheName);
+            _cache = cacheProvider.Named<HttpClient>(_sharedCacheName);
         }
 
         /// <summary>
