@@ -1,21 +1,38 @@
 ﻿using DG.Common.Caching;
 using System;
 using System.Net.Http;
-using System.Runtime.Caching;
 
 namespace DG.Common.Http
 {
     /// <summary>
-    /// This class provides a custom way to create instances of <see cref="HttpClient"/> to prevent socket exhaustion and DNS caching problems.
+    /// This class provides a custom way to create cached instances of <see cref="HttpClient"/> to prevent socket exhaustion and DNS caching problems.
     /// </summary>
-    public static class HttpClientProvider
+    public class HttpClientProvider
     {
+        private const string _sharedCacheName = "DG.Common.Http " + nameof(HttpClientProvider) + " Cache";
+
         //We cache clients to prevent socket exhaustion, and cache it only for 5 minutes to prevent DNS problems.
-        private const string _cacheName = "DG.Common.Http " + nameof(HttpClientProvider) + " Cache";
-        private static readonly TypedCache<HttpClient> _cache = new TypedCache<HttpClient>(
-            ExpirationPolicy.ForAbsoluteExpiration(TimeSpan.FromMinutes(5)),
-            new MemoryCache(_cacheName)
-        );
+        private static readonly ExpirationPolicy _expirationPolicy = ExpirationPolicy.ForAbsoluteExpiration(TimeSpan.FromMinutes(5));
+
+        private readonly ITypedCache<HttpClient> _cache;
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="HttpClientProvider"/> using the given <paramref name="cache"/> to store instances of <see cref="HttpClient"/>.
+        /// </summary>
+        /// <param name="cache"></param>
+        public HttpClientProvider(ITypedCache<HttpClient> cache)
+        {
+            _cache = cache;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="HttpClientProvider"/> using the given <paramref name="cacheProvider"/> to create a shared cache for instances of <see cref="HttpClient"/>.
+        /// </summary>
+        /// <param name="cacheProvider"></param>
+        public HttpClientProvider(TypedCacheProvider cacheProvider)
+            : this(cacheProvider.Named<HttpClient>(_sharedCacheName))
+        {
+        }
 
         /// <summary>
         /// <para>Gets a <see cref="HttpClient"/> instance constructed by the given <see cref="HttpClientSettings"/>.</para>
@@ -23,9 +40,9 @@ namespace DG.Common.Http
         /// </summary>
         /// <param name="settings"></param>
         /// <returns></returns>
-        public static HttpClient ClientForSettings(HttpClientSettings settings)
+        public HttpClient ClientForSettings(HttpClientSettings settings)
         {
-            return _cache.GetOrCreate(settings.GetCacheId(), () => CreateNewClientForSettings(settings));
+            return _cache.GetOrCreate(settings.GetCacheId(), () => CreateNewClientForSettings(settings), _expirationPolicy);
         }
 
         /// <summary>
@@ -33,7 +50,7 @@ namespace DG.Common.Http
         /// </summary>
         /// <param name="settings"></param>
         /// <returns></returns>
-        public static HttpClient CreateNewClientForSettings(HttpClientSettings settings)
+        public HttpClient CreateNewClientForSettings(HttpClientSettings settings)
         {
             HttpClientHandler handler = new HttpClientHandler
             {
